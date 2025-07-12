@@ -1,0 +1,74 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="card mt-3">
+    <div class="card-header">Lead Generation</div>
+    <div class="card-body">
+
+        <form method="POST" id="leadForm">
+            <div class="row mb-3">
+                <div class="col">
+                    <input type="text" name="name" class="form-control" placeholder="Name" required>
+                </div>
+                <div class="col">
+                    <input type="email" name="email" class="form-control" placeholder="Email" required>
+                </div>
+                <div class="col">
+                    <input type="text" name="phone" class="form-control" placeholder="Phone">
+                </div>
+                <div class="col">
+                    <input type="text" name="source" class="form-control" placeholder="Source">
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Add Lead</button>
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-bordered mt-3" id="leadTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Source</th>
+                    <th>Score</th> <!-- Added -->
+                </tr>
+            </thead>
+            <tbody>
+                {% if leads %}
+                    {% for lead in leads %}
+                        <tr>
+                            <td>{{ lead.name }}</td>
+                            <td>{{ lead.email }}</td>
+                            <td>{{ lead.phone }}</td>
+                            <td>{{ lead.source }}</td>
+                            <td>
+                                {% if lead.score is defined %}
+                                    <span class="badge 
+                                        {% if lead.score >= 80 %}
+                                            bg-success
+                                        {% elif lead.score >= 50 %}
+                                            bg-warning
+                                        {% else %}
+                                            bg-danger
+                                        {% endif %}">
+                                        {{ lead.score }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No leads found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}

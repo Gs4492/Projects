@@ -1,0 +1,42 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="card mt-3">
+    <div class="card-header">Order Fulfillment</div>
+    <div class="card-body">
+
+        <div class="search-bar mb-3">
+            <input type="text" id="searchFulfillmentInput" class="form-control" placeholder="Search by Order Number, Fulfillment Date or Status">
+        </div>
+
+        <form id="fulfillmentForm">
+            <div class="row mb-3">
+                <div class="col">
+                    <input type="text" id="order_number" class="form-control" placeholder="Order Number" required>
+                </div>
+                <div class="col">
+                    <input type="date" id="fulfillment_date" class="form-control" placeholder="Fulfillment Date" required>
+                </div>
+                <div class="col">
+                    <input type="text" id="status" class="form-control" placeholder="Status" required>
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Add Fulfillment</button>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered mt-3" id="fulfillmentTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Order Number</th>
+                    <th>Fulfillment Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="fulfillmentList"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
