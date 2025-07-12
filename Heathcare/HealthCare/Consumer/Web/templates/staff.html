@@ -1,0 +1,69 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<h2>Staff</h2>
+
+<!-- Add Staff Form -->
+<div class="form-container">
+    <form method="POST" action="{{ url_for('staff.add_staff') }}" class="form-styled">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="text" name="role" placeholder="Role" required>
+        <input type="text" name="contact" placeholder="Contact" required>
+        <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" name="active" value="1" checked>
+            Active
+        </label>
+        <button type="submit" class="btn-primary">Add Staff</button>
+    </form>
+</div>
+
+<!-- Edit Staff Form -->
+<div id="editStaffFormContainer" class="form-container" style="display: none; margin-top: 20px;">
+    <form method="POST" id="editStaffForm" class="form-styled">
+        <input type="hidden" name="id" id="editStaffId">
+        <input type="text" name="name" id="editStaffName" placeholder="Name" required>
+        <input type="text" name="role" id="editStaffRole" placeholder="Role" required>
+        <input type="text" name="contact" id="editStaffContact" placeholder="Contact" required>
+        <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" name="active" id="editStaffActive" value="1">
+            Active
+        </label>
+        <button type="submit" class="btn-primary">Update Staff</button>
+    </form>
+</div>
+
+<hr>
+
+<!-- Staff Table -->
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Contact</th>
+                <th>Active</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in staff %}
+            <tr>
+                <td>{{ member.id }}</td>
+                <td>{{ member.name }}</td>
+                <td>{{ member.role }}</td>
+                <td>{{ member.contact }}</td>
+                <td>{{ 'Yes' if member.active else 'No' }}</td>
+                <td>
+                    <a href="#" onclick='editStaff({{ member | tojson | safe }})' class="btn-edit">Edit</a> |
+                    <a href="{{ url_for('staff.delete_staff', staff_id=member.id) }}"
+                       class="btn-delete"
+                       onclick="return confirm('Delete this staff member?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

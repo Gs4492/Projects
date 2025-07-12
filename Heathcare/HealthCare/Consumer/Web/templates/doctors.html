@@ -1,0 +1,68 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<h2>Doctors</h2>
+
+<!-- Add Doctor Form -->
+<div class="form-container">
+    <form method="POST" action="{{ url_for('doctors.add_doctor') }}" class="form-styled">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="text" name="specialty" placeholder="Specialty" required>
+        <input type="text" name="contact" placeholder="Contact" required>
+        <select name="available" required>
+            <option value="1">Available</option>
+            <option value="0">Unavailable</option>
+        </select>
+        <button type="submit" class="btn-primary">Add Doctor</button>
+    </form>
+</div>
+
+<!-- Edit Doctor Form (Hidden) -->
+<div id="editFormContainer" class="form-container" style="display:none; margin-top: 20px;">
+    <form method="POST" id="editForm" class="form-styled">
+        <input type="hidden" name="id" id="editId">
+        <input type="text" name="name" id="editName" placeholder="Name" required>
+        <input type="text" name="specialty" id="editSpecialty" placeholder="Specialty" required>
+        <input type="text" name="contact" id="editContact" placeholder="Contact" required>
+        <select name="available" id="editAvailable" required>
+            <option value="1">Available</option>
+            <option value="0">Unavailable</option>
+        </select>
+        <button type="submit" class="btn-primary">Update Doctor</button>
+    </form>
+</div>
+
+<hr>
+
+<!-- Doctor Table -->
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Specialty</th>
+                <th>Contact</th>
+                <th>Available</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doctor in doctors %}
+            <tr>
+                <td>{{ doctor.id }}</td>
+                <td>{{ doctor.name }}</td>
+                <td>{{ doctor.specialty }}</td>
+                <td>{{ doctor.contact }}</td>
+                <td>{{ 'Yes' if doctor.available else 'No' }}</td>
+                <td>
+                    <a href="#" onclick="editDoctor({{ doctor | tojson | safe }})" class="btn-edit">Edit</a> |
+                    <a href="{{ url_for('doctors.delete_doctor', doctor_id=doctor.id) }}" class="btn-delete"
+                        onclick="return confirm('Delete this doctor?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

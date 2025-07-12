@@ -1,0 +1,70 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<h2>Patients</h2>
+
+<!-- Add Patient Form -->
+<div class="form-container">
+    <form method="POST" action="{{ url_for('patients.add_patient') }}" class="form-styled">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="number" name="age" placeholder="Age" required>
+        <select name="gender" required>
+            <option value="" disabled selected>Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+        <input type="text" name="contact" placeholder="Contact" required>
+        <button type="submit" class="btn-primary">Add Patient</button>
+    </form>
+</div>
+
+<!-- Edit Patient Form (optional for future) -->
+<div id="editPatientFormContainer" class="form-container" style="display: none; margin-top: 20px;">
+    <form method="POST" id="editPatientForm" class="form-styled">
+        <input type="hidden" name="id" id="editPatientId">
+        <input type="text" name="name" id="editPatientName" placeholder="Name" required>
+        <input type="number" name="age" id="editPatientAge" placeholder="Age" required>
+        <select name="gender" id="editPatientGender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+        <input type="text" name="contact" id="editPatientContact" placeholder="Contact" required>
+        <button type="submit" class="btn-primary">Update Patient</button>
+    </form>
+</div>
+
+<hr>
+
+<!-- Patient Table -->
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Contact</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td>{{ patient.id }}</td>
+                <td>{{ patient.name }}</td>
+                <td>{{ patient.age }}</td>
+                <td>{{ patient.gender }}</td>
+                <td>{{ patient.contact }}</td>
+                <td>
+                    <a href="#" onclick="editPatient({{ patient | tojson | safe }})" class="btn-edit">Edit</a> |
+                    <a href="{{ url_for('patients.delete_patient', patient_id=patient.id) }}"
+                       class="btn-delete"
+                       onclick="return confirm('Delete this patient?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

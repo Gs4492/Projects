@@ -1,0 +1,26 @@
+@echo off
+set ROOTDIR=C:\AgenticApps\HealthCare
+
+echo Starting Staff Service...
+start cmd /k "cd /d %ROOTDIR%\BusinessServices\StaffService && python app.py"
+
+echo Starting Patient Service...
+start cmd /k "cd /d %ROOTDIR%\BusinessServices\PatientService && python app.py"
+
+echo Starting Doctor Service...
+start cmd /k "cd /d %ROOTDIR%\BusinessServices\DoctorService && python app.py"
+
+echo Starting Billing Service...
+start cmd /k "cd /d %ROOTDIR%\BusinessServices\BillingService && python app.py"
+
+echo Starting Appointment Service...
+start cmd /k "cd /d %ROOTDIR%\BusinessServices\AppointmentService && python app.py"
+
+echo Starting API Gateway Service...
+start cmd /k "cd /d %ROOTDIR%\ApiGateway && python app.py"
+
+echo Starting Consumer Service...
+start cmd /k "cd /d %ROOTDIR%\Consumer\Web && python app.py"
+
+echo All services are starting...
+pause

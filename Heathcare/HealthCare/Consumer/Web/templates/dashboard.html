@@ -1,0 +1,63 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<h2>Dashboard Overview</h2>
+
+<!-- Stat Cards -->
+<div class="cards-container">
+  <div class="card card-patients">
+    <div class="card-icon">👨‍⚕️</div>
+    <div class="card-details">
+      <h4>Patients</h4>
+      <p><span id="totalPatients">0</span></p>
+    </div>
+  </div>
+
+  <div class="card card-doctors">
+    <div class="card-icon">🩺</div>
+    <div class="card-details">
+      <h4>Doctors</h4>
+      <p><span id="totalDoctors">0</span> (<span id="availableDoctors">0</span> available)</p>
+    </div>
+  </div>
+
+  <div class="card card-appointments">
+    <div class="card-icon">📅</div>
+    <div class="card-details">
+      <h4>Appointments</h4>
+      <p><span id="totalAppointments">0</span></p>
+    </div>
+  </div>
+
+  <div class="card card-invoices">
+    <div class="card-icon">💳</div>
+    <div class="card-details">
+      <h4>Invoices</h4>
+      <p><span id="totalInvoices">0</span></p>
+    </div>
+  </div>
+
+  <div class="card card-staff">
+    <div class="card-icon">👥</div>
+    <div class="card-details">
+      <h4>Staff</h4>
+      <p><span id="totalStaff">0</span> (<span id="activeStaff">0</span> active)</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- Charts -->
+<div style="display: flex; gap: 20px; flex-wrap: wrap;">
+  <div id="appointmentsChart" style="width: 48%; height: 400px;"></div>
+  <div id="invoicesChart" style="width: 48%; height: 400px;"></div>
+</div>
+
+<!-- New Trend Charts -->
+<div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 40px;">
+  <div id="appointmentsTrendChart" style="width: 48%; height: 400px;"></div>
+  <div id="invoicesTrendChart" style="width: 48%; height: 400px;"></div>
+</div>
+
+{% endblock %}

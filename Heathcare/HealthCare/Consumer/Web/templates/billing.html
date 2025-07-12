@@ -1,0 +1,54 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<h2>Billing & Invoices</h2>
+
+<!-- Add Invoice Form -->
+<div class="form-container">
+  <form method="POST" action="{{ url_for('billing.add_invoice') }}" class="form-styled">
+    <input type="text" name="patient_name" placeholder="Patient Name" required>
+    <input type="number" name="amount" placeholder="Amount" required>
+    <select name="status" required>
+      <option value="" disabled selected>Status</option>
+      <option value="Unpaid">Unpaid</option>
+      <option value="Paid">Paid</option>
+    </select>
+    <input type="date" name="date" required>
+    <button type="submit" class="btn-primary">Create Invoice</button>
+  </form>
+</div>
+
+<hr>
+
+<!-- Invoice Table -->
+<div class="table-container">
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Patient</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td>{{ invoice.id }}</td>
+        <td>{{ invoice.patient_name }}</td>
+        <td>₹{{ invoice.amount }}</td>
+        <td>{{ invoice.status }}</td>
+        <td>{{ invoice.date }}</td>
+        <td>
+          <a href="{{ url_for('billing.edit_invoice', invoice_id=invoice.id) }}" class="btn-edit">Edit</a> |
+          <a href="{{ url_for('billing.delete_invoice', invoice_id=invoice.id) }}" class="btn-delete"
+             onclick="return confirm('Delete this invoice?')">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
