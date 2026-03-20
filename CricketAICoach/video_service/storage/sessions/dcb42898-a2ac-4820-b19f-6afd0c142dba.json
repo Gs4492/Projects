@@ -1,0 +1,147 @@
+{
+  "session_id": "dcb42898-a2ac-4820-b19f-6afd0c142dba",
+  "created_at": "2026-03-19T05:54:18.025818Z",
+  "player_id": 4,
+  "role": "batting",
+  "session_name": "Net Session",
+  "camera_angle": "front_on",
+  "notes": "",
+  "expected_balls": 24,
+  "original_filename": "VID_20181031_110348.mp4",
+  "stored_filename": "dcb42898-a2ac-4820-b19f-6afd0c142dba.mp4",
+  "stored_path": "C:\\CricketCoach\\video_service\\storage\\uploads\\dcb42898-a2ac-4820-b19f-6afd0c142dba.mp4",
+  "content_type": "video/mp4",
+  "file_size": 339347418,
+  "analysis": {
+    "mode": "batting_video_analysis",
+    "session_id": "dcb42898-a2ac-4820-b19f-6afd0c142dba",
+    "player_id": 4,
+    "cv_status": "ready",
+    "cv_engine": "opencv",
+    "summary": "Computer vision sampled 181 frames across 417.3 seconds and found a moderately stable batting base, with movement concentrated well away from the central corridor. The strongest action bursts were spaced, and the motion bias sat mainly on the left side of frame. That combination usually points to early commitment rather than late adjustment.",
+    "primary_weakness": "base is present, but control is drifting as the swing unfolds",
+    "cause": "timing and balance",
+    "video_observations": [
+      "Average motion energy was 0.055, with peaks rising to 0.777 in the swing phase.",
+      "Stability score was 72.1/100, which makes the base look moderately stable across the sampled actions.",
+      "Only 33.7% of tracked action stayed in the central corridor, so the body is drifting well away from the central corridor.",
+      "Motion bias on the left side of frame suggests the hands or shoulder line are dominating the movement pattern.",
+      "One of the clearest action windows ran from 4.60s to 13.80s, where movement peaked at 0.777."
+    ],
+    "shot_selection_issues": [
+      "Your movement pattern expands before the body has fully stabilized, which makes shot choice happen too early.",
+      "When the action drifts away from the central corridor, the bat path usually follows the body instead of staying under the eyes.",
+      "The footage supports a control problem first and an aggression problem second, so the fix should start with setup and commit timing."
+    ],
+    "technical_workons": [
+      "Hold the head and upper trunk quieter through release so the swing starts from a stiller base.",
+      "Delay front-side commitment by a fraction, especially on balls you are trying to score square or through cover.",
+      "Keep the hands closer to the pad line for the first movement, then extend only once the contact window is clearer.",
+      "Build a tighter central corridor in the first 12 to 18 balls of each net block before opening the scoring arc.",
+      "Review the highest-energy windows frame by frame and compare them with your calmest repetitions to feel the timing difference."
+    ],
+    "recommended_drills": [
+      "Three-ball freeze drill: after each shot, hold the finish for two seconds and check whether the head stayed inside the base line.",
+      "Decision ladder: 18 balls outside off where the first call is leave-or-defend, and only coach-called score balls may be driven.",
+      "Corridor rope drill: place a visual gate in front of off stump and repeat straight-bat contacts without the hands moving outside the gate early.",
+      "Tempo nets: alternate one slow deliberate rep and one game-tempo rep, then compare whether the central-corridor score drops under speed."
+    ],
+    "mental_cues": [
+      "Stay still enough to see length twice: once out of the hand and once at commit point.",
+      "If the body drifts early, the shot has started too early.",
+      "Earn the scoring option after balance, not before balance."
+    ],
+    "progress_markers": [
+      "Push stability score from 72.1 to at least 80.1 over the next three filmed sessions.",
+      "Lift central-corridor action from 33.7% to at least 55.0%.",
+      "Reduce the number of high-energy swings that begin from an unstable setup when coaches review the next net block."
+    ],
+    "video_metadata": {
+      "fps": 30.0,
+      "frame_count": 12520,
+      "duration_seconds": 417.33,
+      "width": 1080,
+      "height": 1920,
+      "camera_angle": "front_on",
+      "role": "batting",
+      "dominant_hand": "right"
+    },
+    "sampling_summary": {
+      "processed_frames": 12520,
+      "sampled_frames": 181,
+      "sample_interval": 69,
+      "average_motion_energy": 0.0547,
+      "peak_motion_energy": 0.7772,
+      "peak_threshold": 0.072,
+      "baseline_threshold": 0.0083
+    },
+    "movement_profile": {
+      "dominant_motion_side": "left",
+      "left_energy_ratio": 0.504,
+      "center_energy_ratio": 0.321,
+      "right_energy_ratio": 0.175,
+      "average_centroid_x": 0.39,
+      "average_centroid_y": 0.422,
+      "lateral_spread": 0.182,
+      "vertical_spread": 0.048,
+      "stability_score": 72.1,
+      "center_corridor_ratio": 0.337,
+      "action_density": 0.034,
+      "camera_confidence": 0.95
+    },
+    "motion_windows": [
+      {
+        "start_time": 4.6,
+        "end_time": 13.8,
+        "peak_energy": 0.7772,
+        "samples": 5
+      },
+      {
+        "start_time": 20.7,
+        "end_time": 27.6,
+        "peak_energy": 0.2562,
+        "samples": 4
+      },
+      {
+        "start_time": 71.3,
+        "end_time": 73.6,
+        "peak_energy": 0.0947,
+        "samples": 2
+      },
+      {
+        "start_time": 112.7,
+        "end_time": 115.0,
+        "peak_energy": 0.1152,
+        "samples": 2
+      },
+      {
+        "start_time": 140.3,
+        "end_time": 142.6,
+        "peak_energy": 0.0787,
+        "samples": 2
+      },
+      {
+        "start_time": 154.1,
+        "end_time": 154.1,
+        "peak_energy": 0.0791,
+        "samples": 1
+      },
+      {
+        "start_time": 170.2,
+        "end_time": 170.2,
+        "peak_energy": 0.081,
+        "samples": 1
+      },
+      {
+        "start_time": 186.3,
+        "end_time": 188.6,
+        "peak_energy": 0.0855,
+        "samples": 2
+      }
+    ],
+    "limitations": [
+      "This version reads motion and body-shape changes from frames, but it does not yet perform ball tracking or exact line-length detection.",
+      "Single-camera practice footage works best when the batter or bowler stays clearly visible through the full action."
+    ]
+  }
+}
