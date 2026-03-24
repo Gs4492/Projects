@@ -54,7 +54,7 @@ def get_daily_memory(db: Session) -> DailyMemory:
         if parsed.bp.systolic is not None and parsed.bp.diastolic is not None:
             last_bp = parsed.bp
 
-        if parsed.symptoms:
+        if parsed.symptoms and "normal" not in parsed.symptoms:
             latest_symptoms = parsed.symptoms
 
     alcohol_units_today = round(alcohol_units_today, 1)
@@ -88,9 +88,6 @@ def merge_with_daily_memory(parsed: ParsedHealthData, memory: DailyMemory) -> Pa
 
     if payload.get("water_ml") is None and memory.water_ml_today is not None:
         payload["water_ml"] = memory.water_ml_today
-
-    if not payload.get("symptoms") and memory.latest_symptoms:
-        payload["symptoms"] = memory.latest_symptoms
 
     return ParsedHealthData.model_validate(payload)
 

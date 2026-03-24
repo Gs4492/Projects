@@ -11,8 +11,23 @@ WINE_TYPES = ["wine"]
 SALTY_FOODS = ["chips", "namkeen", "fries", "salted peanuts", "pickle", "snacks", "papad", "bhujia"]
 JUNK_FOODS = ["chips", "pizza", "burger", "fries", "namkeen", "samosa", "pakora"]
 CARB_FOODS = ["rice", "bread", "roti", "naan", "sweets", "dessert", "cake", "ice cream"]
-SYMPTOMS = ["dizzy", "weak", "headache", "sweating", "chest pain", "chest discomfort", "nausea", "shaky", "blurred"]
-NORMAL_FEELING_WORDS = ["normal", "fine", "okay", "ok", "feeling normal", "i am feeling normal", "i feel normal"]
+SYMPTOMS = [
+    "chest pain",
+    "chest discomfort",
+    "shortness of breath",
+    "breathless",
+    "faint",
+    "confused",
+    "dizzy",
+    "weak",
+    "headache",
+    "sweating",
+    "nausea",
+    "shaky",
+    "blurred",
+]
+NORMAL_FEELING_PHRASES = ["feeling normal", "i am feeling normal", "i feel normal"]
+NORMAL_FEELING_STANDALONE = ["normal", "fine", "okay", "ok"]
 NUMBER_WORDS = {
     "a": 1,
     "an": 1,
@@ -105,9 +120,7 @@ def _heuristic_parse(text: str) -> dict:
     food_items = [food for food in SALTY_FOODS + JUNK_FOODS + CARB_FOODS if food in lowered]
     food_type = _derive_food_type(lowered)
     salt_level = _derive_salt_level(lowered, food_items)
-    symptoms = [symptom for symptom in SYMPTOMS if symptom in lowered]
-    if not symptoms and any(word in lowered for word in NORMAL_FEELING_WORDS):
-        symptoms = ["normal"]
+    symptoms = _parse_symptoms(lowered)
 
     return {
         "bp": {"systolic": systolic, "diastolic": diastolic},
@@ -273,6 +286,21 @@ def _parse_volume_ml(text: str) -> float | None:
     if match:
         return float(match.group(1))
     return None
+
+
+def _parse_symptoms(text: str) -> list[str]:
+    symptoms = [symptom for symptom in SYMPTOMS if symptom in text]
+    if symptoms:
+        return symptoms
+
+    if any(phrase in text for phrase in NORMAL_FEELING_PHRASES):
+        return ["normal"]
+
+    segments = [segment.strip() for segment in text.split(",")]
+    if any(segment in NORMAL_FEELING_STANDALONE for segment in segments):
+        return ["normal"]
+
+    return []
 
 
 def _extract_number_after_keywords(text: str, keywords: list[str]) -> int | None:

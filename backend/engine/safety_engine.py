@@ -1,6 +1,9 @@
 from backend.schemas.request_response import AnalyzeResponse, DailyMemory, ParsedHealthData
 
 
+SEVERE_SYMPTOMS = {"chest pain", "chest discomfort", "shortness of breath", "breathless", "faint", "confused"}
+
+
 class EvaluationResult(AnalyzeResponse):
     pass
 
@@ -22,6 +25,7 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
     drink_type = parsed.alcohol.drink_type
     symptoms = parsed.symptoms
     total_alcohol_today = round((daily_memory.alcohol_units_today or 0) + alcohol_units, 1)
+    elevated_bp = (systolic is not None and systolic >= 140) or (diastolic is not None and diastolic >= 90)
 
     if systolic and diastolic:
         if systolic >= 180 or diastolic >= 110:
@@ -30,12 +34,12 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
             actions.append("Stop alcohol immediately and get urgent medical help if symptoms are present.")
             actions.append("Sit down quietly and recheck blood pressure within 15 minutes.")
         elif systolic >= 160 or diastolic >= 100:
-            risk_score += 4
+            risk_score += 5
             reasons.append(f"Blood pressure is very high at {systolic}/{diastolic}.")
             actions.append("Do not drink more alcohol today.")
             actions.append("Recheck blood pressure within 30 to 60 minutes.")
         elif systolic >= 140 or diastolic >= 90:
-            risk_score += 2
+            risk_score += 3
             reasons.append(f"Blood pressure is elevated at {systolic}/{diastolic}.")
             actions.append(_bp_elevated_action(alcohol_units))
         else:
@@ -45,6 +49,9 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
         if morning_sugar >= 180:
             risk_score += 2
             reasons.append(f"Morning sugar was already high at {morning_sugar}.")
+        elif morning_sugar >= 140:
+            risk_score += 1
+            reasons.append(f"Morning sugar is mildly elevated at {morning_sugar}.")
         elif morning_sugar < 70:
             risk_score += 2
             reasons.append(f"Morning sugar started low at {morning_sugar}.")
@@ -79,7 +86,12 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
         reasons.append(f"Alcohol intake is moderate at about {alcohol_units:.1f} units.")
         actions.append("Do not take another drink for at least 2 hours.")
     elif alcohol_units > 0:
+        risk_score += 1
         reasons.append(f"Alcohol intake is low at about {alcohol_units:.1f} unit.")
+
+    if elevated_bp and alcohol_units > 0:
+        risk_score += 1
+        reasons.append("Alcohol on top of an already elevated BP increases short-term risk.")
 
     if total_alcohol_today >= 6 and alcohol_units > 0:
         risk_score += 2
@@ -142,9 +154,14 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
 
     if symptoms and "normal" not in symptoms:
         symptom_text = ", ".join(symptoms[:3])
-        risk_score += 2
-        reasons.append(f"Symptoms were reported: {symptom_text}.")
-        actions.append("If symptoms get worse or feel severe, seek urgent medical care.")
+        if any(symptom in SEVERE_SYMPTOMS for symptom in symptoms):
+            risk_score += 5
+            reasons.append(f"Serious symptoms were reported: {symptom_text}.")
+            actions.append("Seek urgent medical care now if the symptom is active, worsening, or feels severe.")
+        else:
+            risk_score += 2
+            reasons.append(f"Symptoms were reported: {symptom_text}.")
+            actions.append("If symptoms get worse or feel severe, seek urgent medical care.")
 
     _add_food_and_drink_guidance(
         actions=actions,
@@ -171,12 +188,14 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
     actions = _dedupe(actions)
     reasons = _dedupe(reasons)
 
-    if risk_score >= 9:
-        risk = "HIGH"
-    elif risk_score >= 4:
-        risk = "MEDIUM"
-    else:
-        risk = "LOW"
+    risk = _finalize_risk(
+        risk_score=risk_score,
+        elevated_bp=elevated_bp,
+        sugar=sugar,
+        morning_sugar=morning_sugar,
+        alcohol_units=alcohol_units,
+        symptoms=symptoms,
+    )
 
     summary = build_summary(risk=risk, parsed=parsed, actions=actions, daily_memory=daily_memory)
     return EvaluationResult(
@@ -210,6 +229,21 @@ def build_summary(*, risk: str, parsed: ParsedHealthData, actions: list[str], da
 
     leading = ", ".join(parts) if parts else "Based on the current entry"
     return f"{risk.title()} risk. {leading}. Main next step: {actions[0]}"
+
+
+def _finalize_risk(*, risk_score: int, elevated_bp: bool, sugar, morning_sugar, alcohol_units: float, symptoms: list[str]) -> str:
+    high_sugar = sugar is not None and sugar >= 180
+    very_high_sugar = sugar is not None and sugar >= 250
+    morning_sugar_concern = morning_sugar is not None and morning_sugar >= 140
+    severe_symptoms_present = any(symptom in SEVERE_SYMPTOMS for symptom in symptoms)
+
+    if risk_score >= 9 or very_high_sugar or severe_symptoms_present:
+        return "HIGH"
+    if risk_score >= 4 or (elevated_bp and (alcohol_units > 0 or morning_sugar_concern or high_sugar)):
+        return "MEDIUM"
+    if elevated_bp:
+        return "MEDIUM"
+    return "LOW"
 
 
 def _bp_elevated_action(alcohol_units: float) -> str:
