@@ -1,0 +1,71 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mt-3">O2C Analytics Dashboard</h2>
+
+    <!-- Order Management - Order Status -->
+    <div class="card mt-4">
+        <div class="card-header">Order Management</div>
+        <div class="card-body">
+            <div id="orderStatusChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Credit Management - Credit Utilization -->
+    <div class="card mt-4">
+        <div class="card-header">Credit Management</div>
+        <div class="card-body">
+            <div id="creditUtilizationChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Payment Collection - Efficiency -->
+    <div class="card mt-4">
+        <div class="card-header">Payment Collection</div>
+        <div class="card-body">
+            <div id="paymentCollectionChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Order Fulfillment - Fulfillment Rate -->
+    <div class="card mt-4">
+        <div class="card-header">Order Fulfillment</div>
+        <div class="card-body">
+            <div id="orderFulfillmentChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Invoicing - Invoice Status -->
+    <div class="card mt-4">
+        <div class="card-header">Invoicing</div>
+        <div class="card-body">
+            <div id="invoiceStatusChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Dispute Resolution - Dispute Status -->
+    <div class="card mt-4">
+        <div class="card-header">Dispute Resolution</div>
+        <div class="card-body">
+            <div id="disputeStatusChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Cash Application - Performance -->
+    <div class="card mt-4">
+        <div class="card-header">Cash Application</div>
+        <div class="card-body">
+            <div id="cashApplicationChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Reporting - Combined Chart -->
+    <div class="card mt-4">
+        <div class="card-header">Reporting</div>
+        <div class="card-body">
+            <div id="reportingChart" style="height: 400px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

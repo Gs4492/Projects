@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+
+<div class="container-fluid mt-4">
+
+  <h3 class="mb-4 fw-bold">📊 Analytics Overview</h3>
+
+  <!-- Scorecards -->
+  <div class="row g-4">
+    {% for card in [
+      ['Orders Processed', 'orderMetric', 'fas fa-shopping-cart', '#667eea', '#764ba2'],
+      ['Payments Completed', 'paymentMetric', 'fas fa-credit-card', '#56ab2f', '#a8e063'],
+      ['Orders Delivered', 'fulfillmentMetric', 'fas fa-truck', '#f7971e', '#ffd200'],
+      ['Invoices Issued', 'invoiceMetric', 'fas fa-file-invoice', '#4facfe', '#00f2fe']
+    ] %}
+    <div class="col-lg-3 col-md-6">
+      <div class="info-box" style="background: linear-gradient(135deg, '{{ card[3] }}', '{{ card[4] }}');">
+        
+        <span class="info-box-icon"><i class="{{ card[2] }}"></i></span>
+        <div class="info-box-content">
+          <span class="info-box-text">{{ card[0] }}</span>
+          <span class="info-box-number" id="{{ card[1] }}">--</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Charts Section -->
+  <div class="row g-4 mt-1">
+    <div class="col-xl-6 col-lg-12">
+      <div class="card p-3">
+        <div class="card-header">📦 Order Status</div>
+        <div class="card-body">
+          <div id="orderChart" style="height: 320px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-6 col-lg-12">
+      <div class="card p-3">
+        <div class="card-header">💳 Payment Status</div>
+        <div class="card-body">
+          <div id="paymentChart" style="height: 320px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Metrics -->
+  <div class="row g-4 mt-2">
+    {% for metric in [
+      ['Live Visitors', 'liveVisitors', 'bg-info', 'text-white', 'fas fa-users'],
+      ['Sales Today', 'liveSales', 'bg-success', 'text-white', 'fas fa-dollar-sign'],
+      ['Revenue Today', 'liveRevenue', 'bg-warning', 'text-dark', 'fas fa-coins'],
+      ['Payments Processed', 'livePayments', 'bg-primary', 'text-white', 'fas fa-credit-card']
+    ] %}
+    <div class="col-md-3 col-sm-6">
+      <div class="small-info-box {{ metric[2] }} {{ metric[3] }}">
+        <i class="{{ metric[4] }} fs-2 mb-2"></i>
+        <div class="number" id="{{ metric[1] }}">0</div>
+        <div class="label">{{ metric[0] }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Recent Transactions + Live Order Queue -->
+  <div class="row g-4 mt-3">
+    <div class="col-xl-8 col-lg-12">
+      <div class="card p-3">
+        <div class="card-header">🧾 Recent Transactions</div>
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="recentTransactions">
+              <tr>
+                <td>ORD001</td>
+                <td>2025-05-20</td>
+                <td><span class="badge bg-success">Completed</span></td>
+                <td>$230.50</td>
+              </tr>
+              <tr>
+                <td>ORD002</td>
+                <td>2025-05-22</td>
+                <td><span class="badge bg-warning">Pending</span></td>
+                <td>$510.50</td>
+              </tr>
+              <tr>
+                <td>ORD003</td>
+                <td>2025-05-26</td>
+                <td><span class="badge bg-success">Completed</span></td>
+                <td>$270.50</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-12">
+      <div class="card p-3">
+        <div class="card-header">🚀 Live Order Queue</div>
+        <div class="card-body live-ticker" id="liveOrderQueue">
+          <div class="live-ticker-item">No recent orders</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Performance + Inventory -->
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6 col-md-12">
+      <div class="card p-3">
+        <div class="card-header">📈 Product Performance</div>
+        <div class="card-body" style="overflow-x: auto;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Sales</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+            <tbody id="productPerformance">
+              <tr>
+                <td>Product A</td>
+                <td>120</td>
+                <td>34</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 col-md-12">
+      <div class="card p-3">
+        <div class="card-header">📦 Live Inventory Distribution</div>
+        <div class="card-body">
+          <div id="inventoryChart" style="height: 320px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Traffic Source -->
+  <div class="row g-4 mt-3">
+    <div class="col-lg-12">
+      <div class="card p-3">
+        <div class="card-header">🌐 Traffic Sources</div>
+        <div class="card-body">
+          <div id="trafficChart" style="height: 320px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

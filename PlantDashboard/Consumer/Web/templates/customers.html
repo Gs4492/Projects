@@ -1,0 +1,31 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<h2>👤 Customers</h2>
+
+<table>
+  <tr>
+    <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Prefs</th><th>Actions</th>
+  </tr>
+  {% for customer in customers %}
+  <tr>
+    <td>{{ customer.id }}</td>
+    <td>{{ customer.name }}</td>
+    <td>{{ customer.email }}</td>
+    <td>{{ customer.phone }}</td>
+    <td>{{ customer.address }}</td>
+    <td>{{ customer.preferences }}</td>
+    <td><a href="/customers/delete/{{ customer.id }}">🗑️</a></td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h3>Add Customer</h3>
+<form action="/customers/add" method="post">
+  <input type="text" name="name" placeholder="Name" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="text" name="phone" placeholder="Phone">
+  <input type="text" name="address" placeholder="Address">
+  <input type="text" name="preferences" placeholder="Preferences">
+  <button type="submit">Add Customer</button>
+</form>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="card mt-3">
+    <div class="card-header">Report Management</div>
+    <div class="card-body">
+
+        <div class="search-bar mb-3">
+            <input type="text" id="searchreportingInput" class="form-control" placeholder="Search by Report Name, Report Type or Created At">
+        </div>
+
+        <form id="reportForm">
+            <div class="row mb-3">
+                <input type="hidden" id="report_id">
+                <div class="col">
+                    <input type="text" id="report_name" class="form-control" placeholder="Report Name" required>
+                </div>
+                <div class="col">
+                    <input type="text" id="report_type" class="form-control" placeholder="Report Type" required>
+                </div>
+                <div class="col">
+                    <input type="date" id="created_at" class="form-control" required>
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Add Report</button>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered mt-3" id="reportTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Report Name</th>
+                    <th>Report Type</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="reportList"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

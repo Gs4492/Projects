@@ -1,0 +1,150 @@
+{
+  "session_id": "f2fdaea8-8cb7-49f7-b1ec-4c8f1e6b3405",
+  "created_at": "2026-03-19T05:46:00.151522Z",
+  "player_id": 4,
+  "role": "batting",
+  "session_name": "Net Session",
+  "camera_angle": "front_on",
+  "notes": "",
+  "expected_balls": 24,
+  "original_filename": "VID_20181031_110348.mp4",
+  "stored_filename": "f2fdaea8-8cb7-49f7-b1ec-4c8f1e6b3405.mp4",
+  "stored_path": "C:\\CricketCoach\\video_service\\storage\\uploads\\f2fdaea8-8cb7-49f7-b1ec-4c8f1e6b3405.mp4",
+  "content_type": "video/mp4",
+  "file_size": 339347418,
+  "analysis": {
+    "mode": "batting_video_analysis",
+    "session_id": "f2fdaea8-8cb7-49f7-b1ec-4c8f1e6b3405",
+    "player_id": 4,
+    "cv_status": "ready",
+    "cv_engine": "opencv",
+    "summary": "There is a good base here, so this is very workable. The main issue is not your setup, it is what happens just before and during contact. Your left side is committing a fraction early, and because the head does not stay quiet for long enough, the body continues moving through the shot. That movement pulls the hands away from the body and the bat path stops looking as straight and controlled as it should. For a right-hand batter, that usually means the left leg is not holding the base strongly enough while the right side chases balance. The encouraging part is that this looks like a control-and-timing correction, not a full rebuild.",
+    "primary_weakness": "your base is there, but your left side gets a little eager and the swing loses shape through contact",
+    "cause": "your balance is leaking just before commitment, so the bat path starts to travel with the body instead of under the eyes",
+    "video_observations": [
+      "Your head position is close to good at the start, but it does not stay still long enough once the shot begins.",
+      "The left leg should be giving you a stronger post to hit from, but at the moment it looks like it is allowing the body to keep drifting.",
+      "Once that drift starts, the hands begin reaching away from the body, which is why contact control drops.",
+      "The right leg is then asked to recover balance late instead of helping you stay stable early.",
+      "Most of the visible movement load is showing on the left side of the frame, which supports the idea that one side of the body is taking over instead of the whole base working together.",
+      "The clearest errors come in the parts of the clip where your body keeps travelling through contact instead of staying strong and still at the ball."
+    ],
+    "shot_selection_issues": [
+      "You are starting the scoring movement before the left leg has fully stabilized the base.",
+      "That is why the shot begins to happen to you instead of you staying in charge of the shot.",
+      "When the body moves early, the hands from the right side have to chase the ball rather than present the bat cleanly under the eyes.",
+      "This is exactly the kind of issue that can make you feel rushed even when the ball itself is not especially dangerous."
+    ],
+    "technical_workons": [
+      "Keep the head and chest quieter for longer so the left leg becomes a stronger post at the point of contact.",
+      "Delay the left side commitment slightly, especially on balls outside off or anything you want to drive on the rise.",
+      "Let the hands stay tighter to the body at the start of the downswing so the bat comes down straighter.",
+      "Make the right leg hold shape instead of using it to rescue balance late in the shot.",
+      "In the first 12 to 18 balls of each net block, earn the drive by defending and leaving well first.",
+      "If you clean up this timing point, your natural scoring game should open up without needing to force it."
+    ],
+    "recommended_drills": [
+      "Front-leg post drill: play 12 balls with the only focus on landing and holding the left leg strong through contact for a two-second freeze.",
+      "Leave-defend-drive ladder: first 6 balls leave, next 6 defend, next 6 drive only if the ball is truly in your scoring zone.",
+      "Straight-bat gate drill: place two cones just outside the bat path and play through them without the hands reaching away early.",
+      "Head-over-knee drill: on every front-foot shot, check that the head finishes over the left leg rather than falling away to the side."
+    ],
+    "mental_cues": [
+      "Still head first, scoring option second.",
+      "Land the left leg, then let the bat come through.",
+      "You do not need to rush the shot. If you stay balanced, the runs will still be there."
+    ],
+    "progress_markers": [
+      "In the next three sessions, look for more shots where the head stays over the left leg through contact.",
+      "You should start seeing fewer reaching drives and more clean straight-bat contacts.",
+      "If the ball starts sounding cleaner off the middle without you feeling rushed, that is a strong sign the fix is working."
+    ],
+    "video_metadata": {
+      "fps": 30.0,
+      "frame_count": 12520,
+      "duration_seconds": 417.33,
+      "width": 1080,
+      "height": 1920,
+      "camera_angle": "front_on",
+      "role": "batting",
+      "dominant_hand": "right"
+    },
+    "sampling_summary": {
+      "processed_frames": 12520,
+      "sampled_frames": 181,
+      "sample_interval": 69,
+      "average_motion_energy": 0.0547,
+      "peak_motion_energy": 0.7772,
+      "peak_threshold": 0.072,
+      "baseline_threshold": 0.0083
+    },
+    "movement_profile": {
+      "dominant_motion_side": "left",
+      "left_energy_ratio": 0.504,
+      "center_energy_ratio": 0.321,
+      "right_energy_ratio": 0.175,
+      "average_centroid_x": 0.39,
+      "average_centroid_y": 0.422,
+      "lateral_spread": 0.182,
+      "vertical_spread": 0.048,
+      "stability_score": 72.1,
+      "center_corridor_ratio": 0.337,
+      "action_density": 0.034,
+      "camera_confidence": 0.95
+    },
+    "motion_windows": [
+      {
+        "start_time": 4.6,
+        "end_time": 13.8,
+        "peak_energy": 0.7772,
+        "samples": 5
+      },
+      {
+        "start_time": 20.7,
+        "end_time": 27.6,
+        "peak_energy": 0.2562,
+        "samples": 4
+      },
+      {
+        "start_time": 71.3,
+        "end_time": 73.6,
+        "peak_energy": 0.0947,
+        "samples": 2
+      },
+      {
+        "start_time": 112.7,
+        "end_time": 115.0,
+        "peak_energy": 0.1152,
+        "samples": 2
+      },
+      {
+        "start_time": 140.3,
+        "end_time": 142.6,
+        "peak_energy": 0.0787,
+        "samples": 2
+      },
+      {
+        "start_time": 154.1,
+        "end_time": 154.1,
+        "peak_energy": 0.0791,
+        "samples": 1
+      },
+      {
+        "start_time": 170.2,
+        "end_time": 170.2,
+        "peak_energy": 0.081,
+        "samples": 1
+      },
+      {
+        "start_time": 186.3,
+        "end_time": 188.6,
+        "peak_energy": 0.0855,
+        "samples": 2
+      }
+    ],
+    "limitations": [
+      "This version reads motion and body-shape changes from frames, but it does not yet perform ball tracking or exact line-length detection.",
+      "Single-camera practice footage works best when the batter or bowler stays clearly visible through the full action."
+    ]
+  }
+}

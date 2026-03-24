@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cricket Coach Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="./css/styles.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="bg-art"></div>
+  <div class="container py-4 position-relative">
+    <section class="hero mb-4">
+      <div>
+        <p class="eyebrow mb-1">Cricket AI Coach</p>
+        <h1 class="hero-title mb-1">Coach View</h1>
+        <p class="hero-sub mb-0">Fast workflow: select player, run analytics, get match-ready coaching.</p>
+      </div>
+      <div class="hero-status">
+        <span id="rolePill" class="role-pill">Batsman Mode</span>
+        <div id="statusBanner" class="status-banner">Start: select or create a player.</div>
+        <div id="idsSummary" class="ids-summary">Role: Batting | Player: -, Match: -</div>
+      </div>
+    </section>
+
+    <section class="quick-start mb-3">
+      <div class="quick-pill">How To Use (3 Steps)</div>
+      <p class="mb-0">1) Load player ID. 2) Click Run Analytics. 3) Click Get Coaching. Use "Optional: Add New Match Data" only when you want to upload fresh balls.</p>
+    </section>
+
+    <section class="row g-4 app-shell">
+      <div class="col-lg-4 col-xl-3 side-rail">
+        <div class="control-stack">
+          <div class="control-card primary mode-card">
+            <label class="form-label">Mode</label>
+            <select id="analysisMode" class="form-select mb-2">
+              <option value="batting">Batsman</option>
+              <option value="bowling">Bowler</option>
+            </select>
+            <p class="muted mini mb-0">Layout and analytics context switch per role.</p>
+          </div>
+
+          <div class="control-card player-card">
+            <h2 id="playerSelectTitle" class="card-title">Step 1: Choose Player</h2>
+            <p id="flowHint" class="muted mini">Load existing player ID, or create a new player.</p>
+
+            <label class="form-label">Player ID</label>
+            <div class="row g-2 mb-2">
+              <div class="col-8"><input id="existingPlayerId" type="number" min="1" class="form-control" placeholder="e.g. 4" /></div>
+              <div class="col-4"><button id="loadPlayerBtn" class="btn btn-outline-brand w-100">Load</button></div>
+            </div>
+
+            <div class="divider-text">or create</div>
+            <input id="playerName" class="form-control mb-2" placeholder="Player Name" />
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <select id="battingHand" class="form-select">
+                  <option value="right">Right Hand</option>
+                  <option value="left">Left Hand</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <select id="playerLevel" class="form-select">
+                  <option value="club">Club</option>
+                  <option value="academy">Academy</option>
+                  <option value="school">School</option>
+                  <option value="college">College</option>
+                  <option value="semi_pro">Semi Pro</option>
+                  <option value="pro">Pro</option>
+                </select>
+              </div>
+            </div>
+            <button id="createPlayerBtn" class="btn btn-brand w-100">Create Player</button>
+          </div>
+
+          <div class="control-card primary action-card">
+            <h2 class="card-title">Step 2: Get Insights</h2>
+            <label class="form-label">Last N Matches</label>
+            <input id="queryLastMatches" type="number" class="form-control mb-2" value="5" min="1" max="50" />
+            <div class="d-grid gap-2">
+              <button id="queryPhase2Btn" class="btn btn-warning">Run Analytics (Step 2)</button>
+              <button id="queryPhase3Btn" class="btn btn-success">Get Coaching Advice (Step 3)</button>
+            </div>
+          </div>
+
+          <details class="control-card optional-box utility-card utility-match" id="optionalDataBox">
+            <summary><span>Optional: Add New Match Data</span><small id="matchDataHint">only if you want to upload fresh balls</small></summary>
+            <div class="optional-content mt-3">
+              <h3 class="sub-title">Create Match</h3>
+              <input id="opponent" class="form-control mb-2" placeholder="Opponent Team" />
+              <div class="row g-2 mb-2">
+                <div class="col-6"><input id="matchDate" type="date" class="form-control" /></div>
+                <div class="col-6"><select id="matchFormat" class="form-select"><option value="T20">T20</option><option value="ODI">ODI</option><option value="Test">Test</option></select></div>
+              </div>
+              <button id="createMatchBtn" class="btn btn-brand w-100 mb-3">Create Match</button>
+
+              <h3 class="sub-title">Add Balls</h3>
+              <div class="row g-2 mb-2">
+                <div class="col-4"><input id="dOver" type="number" min="0" class="form-control" placeholder="Over" /></div>
+                <div class="col-4"><input id="dBall" type="number" min="1" max="10" class="form-control" placeholder="Ball" /></div>
+                <div class="col-4"><select id="dBowlerType" class="form-select"><option value="pace">pace</option><option value="spin">spin</option></select></div>
+                <div class="col-4"><select id="dLine" class="form-select"><option value="outside_off">outside_off</option><option value="middle">middle</option><option value="leg">leg</option></select></div>
+                <div class="col-4"><select id="dLength" class="form-select"><option value="full">full</option><option value="good">good</option><option value="short">short</option></select></div>
+                <div class="col-4"><select id="dShot" class="form-select"><option value="leave">leave</option><option value="defend">defend</option><option value="drive">drive</option><option value="cut">cut</option><option value="pull">pull</option><option value="sweep">sweep</option><option value="flick">flick</option><option value="none">none</option></select></div>
+                <div class="col-6"><select id="dOutcome" class="form-select"><option value="dot">dot</option><option value="run">run</option><option value="boundary">boundary</option><option value="wicket">wicket</option></select></div>
+                <div class="col-6"><select id="dDismissal" class="form-select"><option value="">no dismissal</option><option value="caught">caught</option><option value="bowled">bowled</option><option value="lbw">lbw</option><option value="stumped">stumped</option><option value="run_out">run_out</option><option value="hit_wicket">hit_wicket</option></select></div>
+                <div class="col-6"><input id="dPitchX" type="number" step="0.01" min="-2" max="2" class="form-control" placeholder="pitch_x" /></div>
+                <div class="col-6"><input id="dPitchY" type="number" step="0.01" min="0" max="22" class="form-control" placeholder="pitch_y" /></div>
+                <div class="col-6"><input id="dReleaseX" type="number" step="0.01" min="-2" max="2" class="form-control" placeholder="release_x" /></div>
+                <div class="col-6"><input id="dSpeedKph" type="number" step="0.1" min="40" max="180" class="form-control" placeholder="speed_kph" /></div>
+              </div>
+              <div class="row g-2 mt-2 mb-2">
+                <div class="col-4"><button id="addDeliveryBtn" class="btn btn-outline-brand w-100">Add</button></div>
+                <div class="col-4"><button id="loadSampleBtn" class="btn btn-outline-secondary w-100">Sample</button></div>
+                <div class="col-4"><button id="clearDeliveriesBtn" class="btn btn-outline-danger w-100">Clear</button></div>
+              </div>
+              <div class="mini muted">Queued: <span id="deliveryCount">0</span></div>
+              <div class="delivery-list mt-2"><table class="table table-sm mb-0"><thead><tr><th>Ball</th><th>Type</th><th>Zone</th><th>Outcome</th></tr></thead><tbody id="deliveryRows"></tbody></table></div>
+              <button id="uploadDeliveriesBtn" class="btn btn-brand w-100 mt-2">Upload Balls</button>
+            </div>
+          </details>
+
+          <details class="control-card optional-box utility-card utility-video" id="videoDataBox">
+            <summary><span>Optional: Analyze Practice Video</span><small>upload one net session</small></summary>
+            <div class="optional-content mt-3">
+              <h3 class="sub-title">Video Session</h3>
+              <input id="videoSessionName" class="form-control mb-2" placeholder="Session name" value="Net Session" />
+              <div class="row g-2 mb-2">
+                <div class="col-6">
+                  <select id="videoCameraAngle" class="form-select">
+                    <option value="side_on">Side On</option>
+                    <option value="front_on">Front On</option>
+                    <option value="behind_bowler">Behind Bowler</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <input id="videoExpectedBalls" type="number" min="6" max="300" class="form-control" value="24" placeholder="Expected balls" />
+                </div>
+              </div>
+              <textarea id="videoNotes" class="form-control mb-2" rows="3" placeholder="Notes: pace only, sidearm, throwdowns, spin, etc."></textarea>
+              <input id="videoFile" type="file" class="form-control mb-2" accept="video/*" />
+              <div class="mini muted mb-2">Large files are supported. Upload time depends on file size and local network speed.</div>
+              <div class="d-grid gap-2">
+                <button id="uploadVideoBtn" class="btn btn-outline-brand">Upload Practice Video</button>
+                <button id="analyzeVideoBtn" class="btn btn-brand">Run Video Analysis</button>
+              </div>
+              <div class="session-picker mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <div class="sub-title mb-0">Saved Sessions</div>
+                    <div class="mini muted">Load a previously uploaded video for this player.</div>
+                  </div>
+                  <button id="refreshVideoSessionsBtn" class="btn btn-sm btn-outline-secondary">Refresh</button>
+                </div>
+                <select id="videoSessionSelect" class="form-select mb-2">
+                  <option value="">No saved sessions loaded</option>
+                </select>
+                <div class="d-grid gap-2">
+                  <button id="loadVideoSessionBtn" class="btn btn-outline-brand">Load Selected Session</button>
+                </div>
+              </div>
+              <div class="mini muted mt-2">Current video session: <span id="videoSessionStatus">none</span></div>
+              <div class="video-transfer mt-2">
+                <div class="video-transfer-head">
+                  <span id="videoTransferLabel">Waiting</span>
+                  <span id="videoTransferPercent">0%</span>
+                </div>
+                <div class="video-transfer-track">
+                  <div id="videoTransferFill" class="video-transfer-fill"></div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="progress-card debug-only" id="checklistBox"><summary class="summary-title">System Progress</summary><div id="checklist">
+            <div id="statusPlayer">[ ] Player selected</div>
+            <div id="statusMatch">[ ] Match created</div>
+            <div id="statusDeliveries">[ ] Deliveries uploaded</div>
+            <div id="statusAnalytics">[ ] Analytics ready</div>
+            <div id="statusCoaching">[ ] Coaching ready</div>
+          </div></details>
+        </div>
+      </div>
+
+      <div class="col-lg-8 col-xl-9 main-stage">
+        <div id="battingView" class="mode-view active">
+          <div class="mode-hero batting mb-3">
+            <div>
+              <div class="mode-badge mb-2">Batting Coach</div>
+              <h2 class="mode-title">Batsman Review Deck</h2>
+              <p class="mode-note mb-0">See the weakness fast, understand the reason, then move straight into drills and match cues.</p>
+            </div>
+            <div class="mode-orb"></div>
+          </div>
+          <div class="overview-grid mb-3">
+            <div class="panel quick-readout">
+              <h2 class="section-title mb-1">Plain-Language Readout</h2>
+              <p id="batQuickSummary" class="mb-0">Run analytics to get a clear sentence on what is going wrong and what to fix next.</p>
+            </div>
+            <div class="panel video-panel">
+              <h2 class="section-title mb-1">Practice Video Insight</h2>
+              <p id="batVideoSummary" class="mb-2">Upload a net-session video to get shot-selection feedback from practice footage.</p>
+              <ul id="batVideoList" class="mb-0">
+                <li>No video analysis yet.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="insight-shell scoreboard-strip mb-3"><div class="row g-3">
+            <div class="col-md-3"><div class="metric-card"><span>Balls Analyzed</span><strong id="batMetricBalls">-</strong></div></div>
+            <div class="col-md-3"><div class="metric-card"><span>Dismissals</span><strong id="batMetricDismissals">-</strong></div></div>
+            <div class="col-md-3"><div class="metric-card"><span>Shot Error Rate</span><strong id="batMetricFalseRate">-</strong></div></div>
+            <div class="col-md-3"><div class="metric-card"><span>Most Risky Phase</span><strong id="batMetricHighRisk">-</strong></div></div>
+          </div></div>
+
+          <div class="row g-3">
+            <div class="col-xl-7"><div class="panel h-100"><h2 class="section-title">Coach Insight</h2><div class="mb-2"><span class="label">Primary Weakness</span><div id="batCoachingWeakness" class="value">-</div></div><div class="mb-2"><span class="label">Cause</span><span id="batCoachingCause" class="badge text-bg-secondary">-</span></div><div class="mb-2"><span class="label">Explanation</span><div id="batCoachingExplanation" class="value">-</div></div><ul id="batEvidenceList" class="mb-0"></ul></div></div>
+            <div class="col-xl-5"><div class="panel h-100"><h2 class="section-title">Action Plan</h2><span class="label">Training Focus</span><ol id="batImprovementsList" class="mb-3"><li>Run coaching to generate training focus.</li></ol><span class="label">Next Match Rules</span><ol id="batMatchPlanList" class="mb-0"><li>Run coaching to generate match plan.</li></ol></div></div>
+          </div>
+
+          <details class="panel mt-3"><summary class="summary-title">Advanced Batting Charts (Optional)</summary>
+            <div class="row g-3 mt-1">
+              <div class="col-xl-6"><div class="panel h-100 pitch-panel"><h2 class="section-title">Weakness Zones</h2><div class="pitch-board-wrap"><div class="board-y-labels"><span>Short</span><span>Good</span><span>Full</span></div><div id="batZoneBoard" class="pitch-board"><div class="board-col-head">Outside Off</div><div class="board-col-head">Middle</div><div class="board-col-head">Leg</div><div class="zone-cell" data-zone="outside_off-short"><em>0</em></div><div class="zone-cell" data-zone="middle-short"><em>0</em></div><div class="zone-cell" data-zone="leg-short"><em>0</em></div><div class="zone-cell" data-zone="outside_off-good"><em>0</em></div><div class="zone-cell" data-zone="middle-good"><em>0</em></div><div class="zone-cell" data-zone="leg-good"><em>0</em></div><div class="zone-cell" data-zone="outside_off-full"><em>0</em></div><div class="zone-cell" data-zone="middle-full"><em>0</em></div><div class="zone-cell" data-zone="leg-full"><em>0</em></div></div></div><div id="batClusterSummary" class="small mt-2 text-muted">Run analytics to populate zone map.</div></div></div>
+              <div class="col-xl-6">
+                <div class="panel h-100">
+                  <h2 class="section-title">Pressure by Phase</h2>
+                  <div id="batPhaseRiskBars"></div>
+                </div>
+              </div>
+              <div class="col-xl-6">
+                <div class="panel h-100">
+                  <h2 class="section-title">Dismissal Map</h2>
+                  <div id="batDismissalScatter" class="pitch-scatter"></div>
+                  <div class="small text-muted mt-2">Only dismissal balls are plotted.</div>
+                </div>
+              </div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Dismissal By Line/Length</h2><div class="dismissal-table-wrap"><table class="table table-sm mb-0"><thead><tr><th>Line</th><th>Length</th><th>How Out</th><th>Count</th></tr></thead><tbody id="batDismissalRows"></tbody></table></div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Pitch Cloud</h2><div id="batPitchScatter" class="pitch-scatter"></div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Release Cloud</h2><div id="batReleaseScatter" class="release-scatter"></div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Speed Trend</h2><div id="batSpeedTrend" class="speed-trend"></div><div id="batSpeedTrendHint" class="small text-muted mt-2">Run analytics to view speed progression.</div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Pro Metrics</h2><div class="pro-grid"><div><span class="label">Control</span><div id="batProControl" class="value">-</div></div><div><span class="label">Pressure</span><div id="batProPressure" class="value">-</div></div><div><span class="label">Avg Speed</span><div id="batProAvgSpeed" class="value">-</div></div><div><span class="label">Stability</span><div id="batProStability" class="value">-</div></div></div><div class="mt-2"><span class="label">Line</span><div class="consistency-track"><div id="batLineConsistencyBar" class="consistency-fill"></div></div><div id="batLineConsistencyText" class="mini muted">-</div></div><div class="mt-2"><span class="label">Length</span><div class="consistency-track"><div id="batLengthConsistencyBar" class="consistency-fill"></div></div><div id="batLengthConsistencyText" class="mini muted">-</div></div></div></div>
+            </div>
+          </details>
+        </div>
+
+        <div id="bowlingView" class="mode-view">
+          <div class="mode-hero bowling mb-3">
+            <div>
+              <div class="mode-badge bowling mb-2">Bowling Coach</div>
+              <h2 class="mode-title">Bowler Review Deck</h2>
+              <p class="mode-note mb-0">Track release control, spot pressure leaks, and turn the session into a sharper next spell.</p>
+            </div>
+            <div class="mode-orb"></div>
+          </div>
+          <div class="overview-grid mb-3">
+            <div class="panel quick-readout">
+              <h2 class="section-title mb-1">Plain-Language Readout</h2>
+              <p id="bowQuickSummary" class="mb-0">Run analytics to get a clear sentence on where the bowler is leaking or taking wickets.</p>
+            </div>
+            <div class="panel video-panel">
+              <h2 class="section-title mb-1">Practice Video Insight</h2>
+              <p id="bowVideoSummary" class="mb-2">Upload a net-session video to get bowling practice feedback from recorded footage.</p>
+              <ul id="bowVideoList" class="mb-0">
+                <li>No video analysis yet.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="insight-shell scoreboard-strip mb-3"><div class="row g-3">
+            <div class="col-md-3"><div class="metric-card"><span>Balls Analyzed</span><strong id="bowMetricBalls">-</strong></div></div>
+            <div class="col-md-3"><div class="metric-card"><span>Wickets</span><strong id="bowMetricDismissals">-</strong></div></div>
+            <div class="col-md-3"><div class="metric-card"><span>Boundary Leak Rate</span><strong id="bowMetricFalseRate">-</strong></div></div>
+            <div class="col-md-3"><div class="metric-card"><span>Most Risky Phase</span><strong id="bowMetricHighRisk">-</strong></div></div>
+          </div></div>
+
+          <div class="row g-3">
+            <div class="col-xl-7"><div class="panel h-100"><h2 class="section-title">Coach Insight</h2><div class="mb-2"><span class="label">Primary Weakness</span><div id="bowCoachingWeakness" class="value">-</div></div><div class="mb-2"><span class="label">Cause</span><span id="bowCoachingCause" class="badge text-bg-secondary">-</span></div><div class="mb-2"><span class="label">Explanation</span><div id="bowCoachingExplanation" class="value">-</div></div><ul id="bowEvidenceList" class="mb-0"></ul></div></div>
+            <div class="col-xl-5"><div class="panel h-100"><h2 class="section-title">Action Plan</h2><span class="label">Training Focus</span><ol id="bowImprovementsList" class="mb-3"><li>Run coaching to generate training focus.</li></ol><span class="label">Next Match Rules</span><ol id="bowMatchPlanList" class="mb-0"><li>Run coaching to generate match plan.</li></ol></div></div>
+          </div>
+
+          <details class="panel mt-3"><summary class="summary-title">Advanced Bowling Charts (Optional)</summary>
+            <div class="row g-3 mt-1">
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Release Consistency</h2><div id="bowReleaseScatter" class="release-scatter"></div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Speed by Over</h2><div id="bowSpeedTrend" class="speed-trend"></div><div id="bowSpeedTrendHint" class="small text-muted mt-2">Run analytics to view speed progression.</div></div></div>
+              <div class="col-xl-6"><div class="panel h-100 pitch-panel"><h2 class="section-title">Leak Zones</h2><div class="pitch-board-wrap"><div class="board-y-labels"><span>Short</span><span>Good</span><span>Full</span></div><div id="bowZoneBoard" class="pitch-board"><div class="board-col-head">Outside Off</div><div class="board-col-head">Middle</div><div class="board-col-head">Leg</div><div class="zone-cell" data-zone="outside_off-short"><em>0</em></div><div class="zone-cell" data-zone="middle-short"><em>0</em></div><div class="zone-cell" data-zone="leg-short"><em>0</em></div><div class="zone-cell" data-zone="outside_off-good"><em>0</em></div><div class="zone-cell" data-zone="middle-good"><em>0</em></div><div class="zone-cell" data-zone="leg-good"><em>0</em></div><div class="zone-cell" data-zone="outside_off-full"><em>0</em></div><div class="zone-cell" data-zone="middle-full"><em>0</em></div><div class="zone-cell" data-zone="leg-full"><em>0</em></div></div></div><div id="bowClusterSummary" class="small mt-2 text-muted">Run analytics to populate zone map.</div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Phase Pressure</h2><div id="bowPhaseRiskBars"></div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Pitch Cloud</h2><div id="bowPitchScatter" class="pitch-scatter"></div></div></div>
+              <div class="col-xl-6"><div class="panel h-100"><h2 class="section-title">Pro Metrics</h2><div class="pro-grid"><div><span class="label">Control</span><div id="bowProControl" class="value">-</div></div><div><span class="label">Pressure</span><div id="bowProPressure" class="value">-</div></div><div><span class="label">Avg Speed</span><div id="bowProAvgSpeed" class="value">-</div></div><div><span class="label">Stability</span><div id="bowProStability" class="value">-</div></div></div><div class="mt-2"><span class="label">Line</span><div class="consistency-track"><div id="bowLineConsistencyBar" class="consistency-fill"></div></div><div id="bowLineConsistencyText" class="mini muted">-</div></div><div class="mt-2"><span class="label">Length</span><div class="consistency-track"><div id="bowLengthConsistencyBar" class="consistency-fill"></div></div><div id="bowLengthConsistencyText" class="mini muted">-</div></div></div></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="./js/app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

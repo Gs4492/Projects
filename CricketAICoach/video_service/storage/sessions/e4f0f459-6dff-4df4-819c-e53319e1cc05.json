@@ -1,0 +1,47 @@
+{
+  "session_id": "e4f0f459-6dff-4df4-819c-e53319e1cc05",
+  "created_at": "2026-03-19T05:26:20.068646Z",
+  "player_id": 4,
+  "role": "batting",
+  "session_name": "Net Session",
+  "camera_angle": "side_on",
+  "notes": "",
+  "expected_balls": 24,
+  "original_filename": "VID_20181031_110348.mp4",
+  "stored_filename": "e4f0f459-6dff-4df4-819c-e53319e1cc05.mp4",
+  "stored_path": "C:\\CricketCoach\\video_service\\storage\\uploads\\e4f0f459-6dff-4df4-819c-e53319e1cc05.mp4",
+  "content_type": "video/mp4",
+  "file_size": 339347418,
+  "analysis": {
+    "mode": "batting_video_analysis",
+    "session_id": "e4f0f459-6dff-4df4-819c-e53319e1cc05",
+    "player_id": 4,
+    "summary": "Across this nets session, the strongest visual pattern is early commitment to scoring shots against fuller balls outside off.",
+    "video_observations": [
+      "Estimated false-shot moments from roughly 24 balls.",
+      "Front-foot commitment likely begins too early on fuller seam deliveries.",
+      "Shot map should tighten for the first 12-18 balls of each practice block."
+    ],
+    "shot_selection_issues": [
+      "Driving at balls that should be left or defended.",
+      "Expanding scoring intent before control is established."
+    ],
+    "technical_workons": [
+      "Keep head quieter through release and delay hands until length is clearer.",
+      "Train straight-bat access first before cover-drive expansion."
+    ],
+    "recommended_drills": [
+      "Decision drill: 24 balls, leave or defend only outside off until coach calls score ball.",
+      "Straight-bat corridor through the V with no hard hands."
+    ],
+    "mental_cues": [
+      "Line first, then length, then shot.",
+      "If unsure early, default to leave or defend."
+    ],
+    "progress_markers": [
+      "Reduce outside-off false shots by 30% across next 3 sessions.",
+      "Maintain high-control options for first 12 balls in every block."
+    ],
+    "next_version_note": "This is an MVP scaffold. Real CV layers will later replace heuristic observations."
+  }
+}

@@ -1,0 +1,29 @@
+
+
+
+
+<!-- Collapsible Filter Bar -->
+<div id="filterBar" class="card p-3 mb-3" style="display: none;">
+  <form id="dashboardFilters" class="row g-3">
+    <div class="col-md-4">
+      <label for="startDate" class="form-label">Start Date</label>
+      <input type="date" class="form-control" id="startDate">
+    </div>
+    <div class="col-md-4">
+      <label for="endDate" class="form-label">End Date</label>
+      <input type="date" class="form-control" id="endDate">
+    </div>
+    <div class="col-md-4">
+      <label for="status" class="form-label">Order Status</label>
+      <select id="status" class="form-select">
+        <option value="">All</option>
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div class="col-12 d-flex justify-content-end">
+      <button type="submit" class="btn btn-primary">Apply Filters</button>
+    </div>
+  </form>
+</div>

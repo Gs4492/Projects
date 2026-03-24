@@ -1,0 +1,277 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<section class="content-header">
+    <div class="container-fluid mb-3 ms-3" >
+        <h1 class="mb-4">Reports</h1>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid mb-3">
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <input type="date" class="form-control" id="start-date" placeholder="Start Date">
+            </div>
+            <div class="col-md-3">
+                <input type="date" class="form-control" id="end-date" placeholder="End Date">
+            </div>
+            <div class="col-md-3">
+                <select class="form-control" id="customer-filter">
+                    <option value="">All Customers</option>
+                    <option value="Customer A">Customer A</option>
+                    <option value="Customer B">Customer B</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-6" style="margin-right: auto;">
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-9">
+                <!-- existing filters here -->
+            </div>
+            <div class="col-md-3 text-right">
+                <button id="downloadBtn" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download CSV
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Table -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <table id="reportsTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Order ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Filled by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Dummy data array for the reports
+    const reportData = [
+        { date: '2025-05-01', customer: 'Customer A', orderId: '1001', amount: 150, status: 'Completed' },
+        { date: '2025-05-03', customer: 'Customer B', orderId: '1002', amount: 250, status: 'Pending' },
+        { date: '2025-05-05', customer: 'Customer A', orderId: '1003', amount: 300, status: 'Completed' },
+        { date: '2025-05-10', customer: 'Customer B', orderId: '1004', amount: 450, status: 'Cancelled' },
+        { date: '2025-05-12', customer: 'Customer A', orderId: '1005', amount: 500, status: 'Completed' },
+    ];
+
+    // References to DOM elements
+    const startDateInput = document.getElementById('start-date');
+    const endDateInput = document.getElementById('end-date');
+    const customerFilter = document.getElementById('customer-filter');
+    const reportsTableBody = document.querySelector('#reportsTable tbody');
+
+    // Chart instances
+    let barChart;
+    let pieChart;
+
+    // Initialize charts and table
+    function initialize() {
+        // Clear date filters initially
+        startDateInput.value = '';
+        endDateInput.value = '';
+
+        renderTable(reportData);
+        renderBarChart(reportData);
+        renderPieChart(reportData);
+    }
+
+    // Render table rows from filtered data
+    function renderTable(data) {
+        reportsTableBody.innerHTML = '';
+        if (data.length === 0) {
+            reportsTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No data available</td></tr>';
+            return;
+        }
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+        <td>${row.date}</td>
+        <td>${row.customer}</td>
+        <td>${row.orderId}</td>
+        <td>$${row.amount.toFixed(2)}</td>
+        <td>${row.status}</td>
+      `;
+            reportsTableBody.appendChild(tr);
+        });
+    }
+
+    // Render bar chart: Amount per Customer
+    function renderBarChart(data) {
+        const ctx = document.getElementById('barChart').getContext('2d');
+
+        // Aggregate total amount by customer
+        const totals = {};
+        data.forEach(item => {
+            totals[item.customer] = (totals[item.customer] || 0) + item.amount;
+        });
+
+        const labels = Object.keys(totals);
+        const amounts = Object.values(totals);
+
+        if (barChart) {
+            barChart.destroy();
+        }
+
+        barChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Amount',
+                    data: amounts,
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Render pie chart: Status distribution
+    function renderPieChart(data) {
+        const ctx = document.getElementById('pieChart').getContext('2d');
+
+        // Count status occurrences
+        const statusCount = {};
+        data.forEach(item => {
+            statusCount[item.status] = (statusCount[item.status] || 0) + 1;
+        });
+
+        const labels = Object.keys(statusCount);
+        const counts = Object.values(statusCount);
+
+        if (pieChart) {
+            pieChart.destroy();
+        }
+
+        pieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8']
+                }]
+            },
+            options: {
+                responsive: true,
+            }
+        });
+    }
+
+    // Filter data based on inputs
+    function filterData() {
+        let filtered = [...reportData];
+
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        const customer = customerFilter.value;
+
+        if (startDate) {
+            filtered = filtered.filter(item => item.date >= startDate);
+        }
+        if (endDate) {
+            filtered = filtered.filter(item => item.date <= endDate);
+        }
+        if (customer) {
+            filtered = filtered.filter(item => item.customer === customer);
+        }
+
+        renderTable(filtered);
+        renderBarChart(filtered);
+        renderPieChart(filtered);
+    }
+
+    // Event listeners for filters
+    startDateInput.addEventListener('change', filterData);
+    endDateInput.addEventListener('change', filterData);
+    customerFilter.addEventListener('change', filterData);
+
+    // Initialize on page load
+    window.onload = initialize;
+
+    function downloadTableAsCSV(tableId, filename = 'report.csv') {
+  const table = document.getElementById(tableId);
+  let csv = [];
+  for (let row of table.rows) {
+    let rowData = [];
+    for (let cell of row.cells) {
+      // Escape double quotes in cell text
+      let cellText = cell.innerText.replace(/"/g, '""');
+      rowData.push(`"${cellText}"`);
+    }
+    csv.push(rowData.join(","));
+  }
+
+  const csvString = csv.join("\n");
+  const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+
+  // Create download link
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  downloadTableAsCSV("reportsTable");
+});
+
+</script>
+<style>
+  section.content {
+    min-height: 80vh;
+  }
+
+  #chatbot-popup {
+    z-index: 1050; /* above all but not over modals */
+  }
+
+  canvas {
+    width: 100% !important;
+    height: 300px !important;
+  }
+
+  .table {
+    background-color: #fff;
+  }
+</style>
+
+{% endblock %}
