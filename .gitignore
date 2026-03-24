@@ -1,0 +1,11 @@
+.env
+mobile/.env
+.venv/
+node_modules/
+mobile/node_modules/
+__pycache__/
+*.pyc
+dist/
+build/
+pulseai.db
+mobile/.expo/
