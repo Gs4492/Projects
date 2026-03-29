@@ -15,12 +15,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import MicButton from "../components/MicButton";
 import { analyzeText } from "../services/api";
 import { useSpeechToText } from "../services/speech";
-import { ALCOHOL_HELP, QUICK_INPUTS } from "../utils/constants";
+import { ALCOHOL_HELP, LANDING_SECTIONS } from "../utils/constants";
 
 export default function HomeScreen({ navigation }) {
-  const [input, setInput] = useState("");
+  const [food, setFood] = useState("");
+  const [drinks, setDrinks] = useState("");
   const [bp, setBp] = useState("");
   const [sugar, setSugar] = useState("");
+  const [water, setWater] = useState("");
   const [feeling, setFeeling] = useState("");
   const [loading, setLoading] = useState(false);
   const {
@@ -34,13 +36,13 @@ export default function HomeScreen({ navigation }) {
   } = useSpeechToText();
 
   const combinedPreview = useMemo(
-    () => buildCombinedEntry({ input, bp, sugar, feeling }).trim(),
-    [input, bp, sugar, feeling]
+    () => buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }).trim(),
+    [food, drinks, bp, sugar, water, feeling]
   );
 
   useEffect(() => {
     if (transcript) {
-      setInput(transcript);
+      setFood((current) => current || transcript);
     }
   }, [transcript]);
 
@@ -50,11 +52,11 @@ export default function HomeScreen({ navigation }) {
     }
   }, [speechError]);
 
-  async function handleAnalyze(textValue = input) {
-    const combined = buildCombinedEntry({ input: textValue, bp, sugar, feeling }).trim();
+  async function handleAnalyze() {
+    const combined = buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }).trim();
 
     if (!combined) {
-      Alert.alert("Add details", "Type or speak what was eaten, drunk, or measured first.");
+      Alert.alert("Add details", "Fill at least one section before getting guidance.");
       return;
     }
 
@@ -90,129 +92,148 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient colors={["#07131F", "#10233B", "#16365C"]} style={styles.bg}>
+    <LinearGradient colors={["#07101E", "#0B1B2D", "#0F3556"]} style={styles.bg}>
       <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.eyebrow}>PulseAI</Text>
-          <Text style={styles.title}>Tell me what happened today.</Text>
-          <Text style={styles.subtitle}>
-            Food, alcohol, BP, sugar, water, and symptoms can all go in one simple note.
-          </Text>
+          <View style={styles.hero}>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>PulseAI</Text>
+            </View>
+            <Text style={styles.title}>Log each part separately so the guidance feels clearer.</Text>
+            <Text style={styles.subtitle}>
+              Add food, drinks, readings, and how you feel in their own sections. The app combines them into one health check behind the scenes.
+            </Text>
+            <View style={styles.heroGrid}>
+              {LANDING_SECTIONS.map((item) => (
+                <View key={item.title} style={styles.heroCard}>
+                  <Text style={styles.heroCardTitle}>{item.title}</Text>
+                  <Text style={styles.heroCardBody}>{item.body}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
 
           <MicButton isListening={isListening} onPress={handleMicPress} transcript={transcript} />
 
           {needsDevBuild ? (
             <View style={styles.noticeBox}>
-              <Text style={styles.noticeTitle}>Expo Go preview mode</Text>
+              <Text style={styles.noticeTitle}>Preview mode</Text>
               <Text style={styles.noticeText}>
-                The app UI works here, but speech input needs a development build or APK.
+                The layout works here, but real speech input needs a development build or APK.
               </Text>
             </View>
           ) : null}
 
-          <View style={styles.mainPanel}>
-            <Text style={styles.panelTitle}>What did you eat, drink, or measure?</Text>
-            <Text style={styles.panelIntro}>
-              Examples: rice and sweets, 2 small pegs whiskey, 1 large beer, BP 150/95, sugar 180, feeling weak.
-            </Text>
+          <SectionCard eyebrow="Food" title="What food was eaten today?" tone="slate">
+            <Text style={styles.sectionBody}>Examples: dal and rice, chips, sweets, burger and fries, fruit, normal home food.</Text>
             <TextInput
               multiline
-              onChangeText={setInput}
-              placeholder="Example: rice and sweets, or 2 small pegs whiskey and chips"
+              onChangeText={setFood}
+              placeholder="Example: dal, rice, chips, and fruit"
               placeholderTextColor="#94A3B8"
               style={styles.input}
-              value={input}
+              value={food}
             />
-          </View>
+          </SectionCard>
 
-          <View style={styles.panelStrong}>
-            <Text style={styles.panelTitle}>Optional helpers</Text>
-            <Text style={styles.helperText}>Use these only if it feels easier than typing everything in the main note.</Text>
-
-            <View style={styles.helperRow}>
-              <View style={styles.helperField}>
-                <Text style={styles.questionLabel}>BP</Text>
-                <TextInput
-                  onChangeText={setBp}
-                  placeholder="150/95"
-                  placeholderTextColor="#94A3B8"
-                  style={styles.smallInput}
-                  value={bp}
-                />
-              </View>
-              <View style={styles.helperField}>
-                <Text style={styles.questionLabel}>Sugar</Text>
-                <TextInput
-                  onChangeText={setSugar}
-                  placeholder="180"
-                  placeholderTextColor="#94A3B8"
-                  style={styles.smallInput}
-                  value={sugar}
-                />
-              </View>
+          <SectionCard eyebrow="Drinks" title="What drinks were taken?" tone="orange">
+            <Text style={styles.sectionBody}>Add alcohol, water, tea, coffee, juice, or anything else taken during the day.</Text>
+            <TextInput
+              multiline
+              onChangeText={setDrinks}
+              placeholder="Example: 1 small peg whiskey, 2 glasses water"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+              value={drinks}
+            />
+            <View style={styles.inlineGuide}>
+              {ALCOHOL_HELP.map((item) => (
+                <View key={item} style={styles.inlineGuidePill}>
+                  <Text style={styles.inlineGuideText}>{item}</Text>
+                </View>
+              ))}
             </View>
+          </SectionCard>
 
-            <Text style={styles.questionLabel}>Feeling</Text>
-            <View style={styles.inlineButtons}>
-              <Pressable onPress={() => setFeeling("I am feeling normal")} style={styles.inlineButton}>
-                <Text style={styles.inlineButtonText}>Normal</Text>
-              </Pressable>
-              <Pressable onPress={() => setFeeling("feeling dizzy and weak")} style={styles.inlineButton}>
-                <Text style={styles.inlineButtonText}>Dizzy/Weak</Text>
-              </Pressable>
+          <SectionCard eyebrow="Health" title="Add readings if you have them" tone="green">
+            <View style={styles.metricGrid}>
+              <MetricField label="BP" placeholder="Example 150/95" value={bp} onChangeText={setBp} />
+              <MetricField label="Sugar" placeholder="Example 180" value={sugar} onChangeText={setSugar} />
             </View>
+            <MetricField
+              label="Water"
+              placeholder="Example 2 glasses or 500 ml"
+              value={water}
+              onChangeText={setWater}
+            />
+          </SectionCard>
+
+          <SectionCard eyebrow="Feeling" title="How do you feel right now?" tone="blue">
+            <Text style={styles.sectionBody}>Write something simple like: I am feeling normal, dizzy, weak, heavy, tired, or headache.</Text>
             <TextInput
               onChangeText={setFeeling}
               placeholder="Example: I am feeling normal"
               placeholderTextColor="#94A3B8"
-              style={styles.smallInput}
+              style={styles.singleInput}
               value={feeling}
             />
-          </View>
+          </SectionCard>
 
-          <View style={styles.panel}>
-            <Text style={styles.previewLabel}>What will be analyzed</Text>
-            <Text style={styles.previewText}>{combinedPreview || "Nothing added yet."}</Text>
-            <Pressable disabled={loading} onPress={() => handleAnalyze()} style={styles.primaryButton}>
+          <View style={styles.previewCard}>
+            <View style={styles.previewHeader}>
+              <View>
+                <Text style={styles.sectionEyebrow}>Preview</Text>
+                <Text style={styles.sectionTitle}>What will be analyzed</Text>
+              </View>
+              <Pressable onPress={() => navigation.navigate("History")} style={styles.ghostButton}>
+                <Text style={styles.ghostButtonText}>History</Text>
+              </Pressable>
+            </View>
+            <Text style={styles.previewText}>{combinedPreview || "Your food, drinks, readings, and feeling will be combined here before analysis."}</Text>
+            <Pressable disabled={loading} onPress={handleAnalyze} style={styles.primaryButton}>
               {loading ? <ActivityIndicator color="#FFF7ED" /> : <Text style={styles.primaryLabel}>Get guidance</Text>}
             </Pressable>
           </View>
-
-          <View style={styles.quickWrap}>
-            <Text style={styles.sectionTitle}>Try these examples</Text>
-            {QUICK_INPUTS.map((item) => (
-              <Pressable key={item} onPress={() => setInput(item)} style={styles.quickChip}>
-                <Text style={styles.quickChipText}>{item}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={styles.panel}>
-            <Text style={styles.panelTitle}>Alcohol size guide</Text>
-            {ALCOHOL_HELP.map((item) => (
-              <Text key={item} style={styles.helpText}>
-                {item}
-              </Text>
-            ))}
-            <Text style={styles.disclaimer}>
-              Guidance only. This app is not a doctor or emergency service.
-            </Text>
-          </View>
-
-          <Pressable onPress={() => navigation.navigate("History")} style={styles.secondaryButton}>
-            <Text style={styles.secondaryLabel}>View history</Text>
-          </Pressable>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
 }
 
-function buildCombinedEntry({ input, bp, sugar, feeling }) {
+function SectionCard({ eyebrow, title, tone, children }) {
+  return (
+    <View style={[styles.sectionCard, tone === "orange" && styles.orangeCard, tone === "green" && styles.greenCard, tone === "blue" && styles.blueCard]}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionEyebrow}>{eyebrow}</Text>
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+function MetricField({ label, placeholder, value, onChangeText }) {
+  return (
+    <View style={styles.metricField}>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <TextInput
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#94A3B8"
+        style={styles.metricInput}
+        value={value}
+      />
+    </View>
+  );
+}
+
+function buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }) {
   const parts = [];
-  if (input?.trim()) parts.push(input.trim());
+  if (food?.trim()) parts.push(`ate ${food.trim()}`);
+  if (drinks?.trim()) parts.push(`had ${drinks.trim()}`);
   if (bp?.trim()) parts.push(`BP ${bp.trim()}`);
   if (sugar?.trim()) parts.push(`sugar ${sugar.trim()}`);
+  if (water?.trim()) parts.push(water.toLowerCase().includes("water") ? water.trim() : `water ${water.trim()}`);
   if (feeling?.trim()) parts.push(feeling.trim());
   return parts.join(", ");
 }
@@ -222,32 +243,64 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   content: {
     padding: 20,
-    paddingBottom: 36,
+    paddingBottom: 40,
   },
-  eyebrow: {
-    color: "#FBBF24",
-    fontSize: 14,
+  hero: {
+    marginBottom: 18,
+  },
+  badge: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(251, 191, 36, 0.14)",
+    borderRadius: 999,
+    marginBottom: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  badgeText: {
+    color: "#FCD34D",
+    fontSize: 13,
     fontWeight: "800",
-    letterSpacing: 1.6,
-    marginBottom: 10,
+    letterSpacing: 1.2,
     textTransform: "uppercase",
   },
   title: {
     color: "#F8FAFC",
     fontSize: 34,
     fontWeight: "900",
+    letterSpacing: -0.6,
     lineHeight: 40,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   subtitle: {
     color: "#D6E3F3",
-    fontSize: 18,
+    fontSize: 17,
     lineHeight: 26,
-    marginBottom: 24,
+    marginBottom: 18,
+  },
+  heroGrid: {
+    gap: 12,
+  },
+  heroCard: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: 16,
+  },
+  heroCardTitle: {
+    color: "#F8FAFC",
+    fontSize: 18,
+    fontWeight: "800",
+    marginBottom: 6,
+  },
+  heroCardBody: {
+    color: "#CBD5E1",
+    fontSize: 15,
+    lineHeight: 22,
   },
   noticeBox: {
     backgroundColor: "rgba(250, 204, 21, 0.14)",
-    borderRadius: 20,
+    borderRadius: 22,
     marginTop: 16,
     padding: 16,
   },
@@ -262,110 +315,126 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
   },
-  mainPanel: {
+  sectionCard: {
     backgroundColor: "rgba(15, 23, 42, 0.78)",
-    borderRadius: 24,
-    marginTop: 20,
-    padding: 18,
+    borderRadius: 28,
+    marginTop: 18,
+    padding: 20,
   },
-  panelStrong: {
+  orangeCard: {
+    backgroundColor: "rgba(249, 115, 22, 0.12)",
+  },
+  greenCard: {
+    backgroundColor: "rgba(34, 197, 94, 0.12)",
+  },
+  blueCard: {
     backgroundColor: "rgba(59, 130, 246, 0.14)",
-    borderRadius: 24,
-    marginTop: 20,
-    padding: 18,
   },
-  panel: {
-    backgroundColor: "rgba(15, 23, 42, 0.78)",
-    borderRadius: 24,
-    marginTop: 20,
-    padding: 18,
+  sectionHeader: {
+    marginBottom: 12,
   },
-  panelTitle: {
-    color: "#F8FAFC",
-    fontSize: 22,
+  sectionEyebrow: {
+    color: "#93C5FD",
+    fontSize: 13,
     fontWeight: "800",
-    marginBottom: 14,
-  },
-  panelIntro: {
-    color: "#CBD5E1",
-    fontSize: 16,
-    lineHeight: 23,
-    marginBottom: 12,
-  },
-  helperText: {
-    color: "#D6E3F3",
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  questionLabel: {
-    color: "#E2E8F0",
-    fontSize: 15,
-    fontWeight: "700",
-    marginBottom: 6,
-  },
-  helperRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  helperField: {
-    flex: 1,
-  },
-  inlineButtons: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 10,
-  },
-  inlineButton: {
-    backgroundColor: "#123356",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  inlineButtonText: {
-    color: "#E0F2FE",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  input: {
-    backgroundColor: "#0F172A",
-    borderColor: "#475569",
-    borderRadius: 18,
-    borderWidth: 1,
-    color: "#F8FAFC",
-    fontSize: 18,
-    minHeight: 120,
-    padding: 18,
-    textAlignVertical: "top",
-  },
-  smallInput: {
-    backgroundColor: "#0F172A",
-    borderColor: "#475569",
-    borderRadius: 16,
-    borderWidth: 1,
-    color: "#F8FAFC",
-    fontSize: 16,
-    marginBottom: 10,
-    padding: 14,
-  },
-  previewLabel: {
-    color: "#FDE68A",
-    fontSize: 14,
-    fontWeight: "700",
+    letterSpacing: 1.1,
     marginBottom: 6,
     textTransform: "uppercase",
   },
-  previewText: {
-    color: "#E2E8F0",
-    fontSize: 17,
+  sectionTitle: {
+    color: "#F8FAFC",
+    fontSize: 24,
+    fontWeight: "900",
+    lineHeight: 30,
+  },
+  sectionBody: {
+    color: "#CBD5E1",
+    fontSize: 16,
     lineHeight: 24,
+    marginBottom: 14,
+  },
+  input: {
+    backgroundColor: "#0F172A",
+    borderColor: "rgba(148, 163, 184, 0.42)",
+    borderRadius: 22,
+    borderWidth: 1,
+    color: "#F8FAFC",
+    fontSize: 18,
+    minHeight: 118,
+    padding: 18,
+    textAlignVertical: "top",
+  },
+  singleInput: {
+    backgroundColor: "rgba(15, 23, 42, 0.9)",
+    borderColor: "rgba(148, 163, 184, 0.42)",
+    borderRadius: 18,
+    borderWidth: 1,
+    color: "#F8FAFC",
+    fontSize: 16,
+    padding: 14,
+  },
+  metricGrid: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 12,
+  },
+  metricField: {
+    flex: 1,
+  },
+  metricLabel: {
+    color: "#DCFCE7",
+    fontSize: 15,
+    fontWeight: "800",
+    marginBottom: 6,
+  },
+  metricInput: {
+    backgroundColor: "rgba(15, 23, 42, 0.9)",
+    borderColor: "rgba(148, 163, 184, 0.42)",
+    borderRadius: 18,
+    borderWidth: 1,
+    color: "#F8FAFC",
+    fontSize: 16,
+    padding: 14,
+  },
+  inlineGuide: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 14,
+  },
+  inlineGuidePill: {
+    backgroundColor: "rgba(15, 23, 42, 0.84)",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  inlineGuideText: {
+    color: "#E2E8F0",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  previewCard: {
+    backgroundColor: "rgba(15, 23, 42, 0.88)",
+    borderRadius: 28,
+    marginTop: 18,
+    padding: 20,
+  },
+  previewHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  previewText: {
+    color: "#FFF7ED",
+    fontSize: 17,
+    lineHeight: 25,
+    marginBottom: 16,
   },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#F97316",
     borderRadius: 18,
-    marginTop: 16,
     paddingVertical: 18,
   },
   primaryLabel: {
@@ -373,48 +442,15 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "900",
   },
-  quickWrap: {
-    marginTop: 22,
+  ghostButton: {
+    backgroundColor: "rgba(30, 41, 59, 0.9)",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  sectionTitle: {
+  ghostButtonText: {
     color: "#E2E8F0",
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 12,
-  },
-  quickChip: {
-    backgroundColor: "#172554",
-    borderRadius: 18,
-    marginBottom: 10,
-    padding: 16,
-  },
-  quickChipText: {
-    color: "#DBEAFE",
-    fontSize: 16,
-    lineHeight: 23,
-  },
-  helpText: {
-    color: "#E2E8F0",
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  disclaimer: {
-    color: "#FCA5A5",
     fontSize: 14,
-    lineHeight: 20,
-    marginTop: 10,
-  },
-  secondaryButton: {
-    alignItems: "center",
-    borderColor: "#94A3B8",
-    borderRadius: 18,
-    borderWidth: 1,
-    marginTop: 20,
-    paddingVertical: 16,
-  },
-  secondaryLabel: {
-    color: "#E2E8F0",
-    fontSize: 18,
     fontWeight: "800",
   },
 });
