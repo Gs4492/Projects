@@ -28,26 +28,61 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
             do_now=response.follow_up_questions[:4],
         )
 
-    what_is_happening = " ".join(response.reasons[:2]) if response.reasons else "This entry needs attention."
+    parsed = response.parsed_data
+    what_is_happening = " ".join(response.reasons[:3]) if response.reasons else "This entry needs attention."
 
-    do_now = _pick_many(response.actions, ["do not", "stop", "drink about", "take a fast sugar", "sit quietly", "avoid more alcohol", "pause", "keep salt low"])
-    eat_next = _pick_many(response.actions, ["next meal", "simple home meal", "small snack", "balanced meal"])
-    drink_now = _pick_many(response.actions, ["water", "drinks now", "lemon water", "coconut water"])
-    avoid = _pick_many(response.actions, ["avoid", "do not take any more", "do not add any more", "no more alcohol"])
-    check_again = _pick_many(response.actions, ["recheck", "check again", "30 to 60", "15 minutes", "later today"])
-    when_to_get_help = _pick_many(response.actions, ["urgent medical", "medical care", "seek"])
+    do_now: list[str] = []
+    eat_next: list[str] = []
+    drink_now: list[str] = []
+    avoid: list[str] = []
+    check_again: list[str] = []
+    when_to_get_help: list[str] = []
+
+    for action in response.actions:
+        lowered = action.lower()
+        if any(token in lowered for token in ["urgent medical", "seek", "medical care", "get help"]):
+            when_to_get_help.append(action)
+        elif lowered.startswith("next meal:") or "small snack" in lowered or "simple home meal" in lowered:
+            eat_next.append(action)
+        elif lowered.startswith("for drinks now:") or "drink about" in lowered or "water is best" in lowered or "lemon water" in lowered or "coconut water" in lowered:
+            drink_now.append(action)
+        elif any(token in lowered for token in ["recheck", "check again", "15 minutes", "30 to 60", "later today"]):
+            check_again.append(action)
+        elif lowered.startswith("avoid") or lowered.startswith("do not") or lowered.startswith("no more") or lowered.startswith("keep "):
+            avoid.append(action)
+        else:
+            do_now.append(action)
+
+    if parsed.alcohol.alcohol_units > 0 and not any("alcohol" in item.lower() or parsed.alcohol.drink_type and parsed.alcohol.drink_type.lower() in item.lower() for item in avoid + do_now + drink_now):
+        readable = parsed.alcohol.drink_type.title() if parsed.alcohol.drink_type else "alcohol"
+        if parsed.alcohol.alcohol_units <= 1:
+            avoid.insert(0, f"Keep {readable} limited today and avoid mixing it with salty food.")
+        else:
+            avoid.insert(0, f"Do not add more {readable} right now.")
+
+    if parsed.food.food_type and not eat_next:
+        if parsed.food.food_type == "junk":
+            eat_next.append("Next meal: choose simple home food instead of another fried or packaged snack.")
+        elif parsed.food.food_type == "carb-heavy":
+            eat_next.append("Next meal: keep it lighter with vegetables, dal, eggs, or salad.")
+
+    if parsed.bp.systolic and parsed.bp.diastolic and parsed.bp.systolic >= 140 and not check_again:
+        check_again.append("Recheck blood pressure later today after resting quietly.")
+
+    if parsed.alcohol.alcohol_units > 0 and not drink_now:
+        drink_now.append("Drink water now rather than another alcoholic or sugary drink.")
 
     if not do_now and response.actions:
         do_now = response.actions[:2]
 
     return GuidanceSections(
         what_is_happening=what_is_happening,
-        do_now=do_now[:3],
-        eat_next=eat_next[:3],
-        drink_now=drink_now[:3],
-        avoid=avoid[:3],
-        check_again=check_again[:2],
-        when_to_get_help=when_to_get_help[:2],
+        do_now=_dedupe(do_now)[:3],
+        eat_next=_dedupe(eat_next)[:3],
+        drink_now=_dedupe(drink_now)[:3],
+        avoid=_dedupe(avoid)[:4],
+        check_again=_dedupe(check_again)[:2],
+        when_to_get_help=_dedupe(when_to_get_help)[:2],
     )
 
 
@@ -65,6 +100,8 @@ def _fallback_message(response: AnalyzeResponse) -> str:
         bits.append(f"Eat next: {guidance.eat_next[0]}")
     if guidance.drink_now:
         bits.append(f"Drink now: {guidance.drink_now[0]}")
+    if guidance.avoid:
+        bits.append(f"Avoid: {guidance.avoid[0]}")
     if guidance.check_again:
         bits.append(f"Check again: {guidance.check_again[0]}")
     if response.daily_memory.entries_today:
@@ -73,11 +110,9 @@ def _fallback_message(response: AnalyzeResponse) -> str:
     return " ".join(bits)
 
 
-def _pick_many(actions: list[str], keywords: list[str]) -> list[str]:
+def _dedupe(items: list[str]) -> list[str]:
     picked: list[str] = []
-    lowered_keywords = [keyword.lower() for keyword in keywords]
-    for action in actions:
-        lowered = action.lower()
-        if any(keyword in lowered for keyword in lowered_keywords) and action not in picked:
-            picked.append(action)
+    for item in items:
+        if item and item not in picked:
+            picked.append(item)
     return picked
