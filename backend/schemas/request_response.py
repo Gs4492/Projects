@@ -51,6 +51,16 @@ class DailyMemory(BaseModel):
     summary: str = "No earlier entries yet today."
 
 
+class GuidanceSections(BaseModel):
+    what_is_happening: str = ""
+    do_now: list[str] = Field(default_factory=list)
+    eat_next: list[str] = Field(default_factory=list)
+    drink_now: list[str] = Field(default_factory=list)
+    avoid: list[str] = Field(default_factory=list)
+    check_again: list[str] = Field(default_factory=list)
+    when_to_get_help: list[str] = Field(default_factory=list)
+
+
 class AnalyzeResponse(BaseModel):
     status: str = "complete"
     risk: str
@@ -62,3 +72,4 @@ class AnalyzeResponse(BaseModel):
     knowledge: list[str] = Field(default_factory=list)
     parsed_data: ParsedHealthData
     daily_memory: DailyMemory = Field(default_factory=DailyMemory)
+    guidance: GuidanceSections = Field(default_factory=GuidanceSections)

@@ -15,15 +15,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import MicButton from "../components/MicButton";
 import { analyzeText } from "../services/api";
 import { useSpeechToText } from "../services/speech";
-import { ALCOHOL_HELP, QUICK_INPUTS, QUICK_LOGS } from "../utils/constants";
+import { ALCOHOL_HELP, QUICK_INPUTS } from "../utils/constants";
 
 export default function HomeScreen({ navigation }) {
   const [input, setInput] = useState("");
-  const [morningSugar, setMorningSugar] = useState("");
   const [bp, setBp] = useState("");
-  const [water, setWater] = useState("");
-  const [symptoms, setSymptoms] = useState("");
-  const [foodWithDrink, setFoodWithDrink] = useState("");
+  const [sugar, setSugar] = useState("");
+  const [feeling, setFeeling] = useState("");
   const [loading, setLoading] = useState(false);
   const {
     isAvailable,
@@ -33,12 +31,11 @@ export default function HomeScreen({ navigation }) {
     needsDevBuild,
     startListening,
     stopListening,
-    clearTranscript,
   } = useSpeechToText();
 
   const combinedPreview = useMemo(
-    () => buildCombinedEntry({ input, morningSugar, bp, water, symptoms, foodWithDrink }).trim(),
-    [input, morningSugar, bp, water, symptoms, foodWithDrink]
+    () => buildCombinedEntry({ input, bp, sugar, feeling }).trim(),
+    [input, bp, sugar, feeling]
   );
 
   useEffect(() => {
@@ -54,17 +51,10 @@ export default function HomeScreen({ navigation }) {
   }, [speechError]);
 
   async function handleAnalyze(textValue = input) {
-    const combined = buildCombinedEntry({
-      input: textValue,
-      morningSugar,
-      bp,
-      water,
-      symptoms,
-      foodWithDrink,
-    }).trim();
+    const combined = buildCombinedEntry({ input: textValue, bp, sugar, feeling }).trim();
 
     if (!combined) {
-      Alert.alert("Add details", "Enter the drink or food details and answer the quick questions first.");
+      Alert.alert("Add details", "Type or speak what was eaten, drunk, or measured first.");
       return;
     }
 
@@ -80,11 +70,6 @@ export default function HomeScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
-  }
-
-  function appendQuickLog(text) {
-    clearTranscript();
-    setInput((current) => (current.trim() ? `${current.trim()}, ${text}` : text));
   }
 
   async function handleMicPress() {
@@ -105,13 +90,13 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient colors={["#09111F", "#13213C", "#1D2F54"]} style={styles.bg}>
+    <LinearGradient colors={["#07131F", "#10233B", "#16365C"]} style={styles.bg}>
       <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.eyebrow}>PulseAI</Text>
-          <Text style={styles.title}>Answer the basics first, then get one final answer.</Text>
+          <Text style={styles.title}>Tell me what happened today.</Text>
           <Text style={styles.subtitle}>
-            This works better when morning sugar, BP, water, and symptoms are asked before the final advice.
+            Food, alcohol, BP, sugar, water, and symptoms can all go in one simple note.
           </Text>
 
           <MicButton isListening={isListening} onPress={handleMicPress} transcript={transcript} />
@@ -125,96 +110,76 @@ export default function HomeScreen({ navigation }) {
             </View>
           ) : null}
 
-          <View style={styles.panelStrong}>
-            <Text style={styles.panelTitle}>Quick health questions</Text>
-
-            <Text style={styles.questionLabel}>What was the morning sugar?</Text>
-            <TextInput
-              keyboardType="numeric"
-              onChangeText={setMorningSugar}
-              placeholder="Example 150"
-              placeholderTextColor="#94A3B8"
-              style={styles.smallInput}
-              value={morningSugar}
-            />
-
-            <Text style={styles.questionLabel}>What is the blood pressure right now?</Text>
-            <TextInput
-              onChangeText={setBp}
-              placeholder="Example 150/95"
-              placeholderTextColor="#94A3B8"
-              style={styles.smallInput}
-              value={bp}
-            />
-
-            <Text style={styles.questionLabel}>How much water was taken today?</Text>
-            <TextInput
-              onChangeText={setWater}
-              placeholder="Example 500 ml or 2 glasses"
-              placeholderTextColor="#94A3B8"
-              style={styles.smallInput}
-              value={water}
-            />
-
-            <Text style={styles.questionLabel}>What was eaten with the drink?</Text>
-            <TextInput
-              onChangeText={setFoodWithDrink}
-              placeholder="Example chips or fried snacks"
-              placeholderTextColor="#94A3B8"
-              style={styles.smallInput}
-              value={foodWithDrink}
-            />
-
-            <Text style={styles.questionLabel}>How are you feeling right now?</Text>
-            <View style={styles.inlineButtons}>
-              <Pressable onPress={() => setSymptoms("I am feeling normal")} style={styles.inlineButton}>
-                <Text style={styles.inlineButtonText}>Normal</Text>
-              </Pressable>
-              <Pressable onPress={() => setSymptoms("feeling dizzy and weak")} style={styles.inlineButton}>
-                <Text style={styles.inlineButtonText}>Dizzy/Weak</Text>
-              </Pressable>
-            </View>
-            <TextInput
-              multiline
-              onChangeText={setSymptoms}
-              placeholder="Type here. Example: I am feeling normal"
-              placeholderTextColor="#94A3B8"
-              style={styles.largeQuestionInput}
-              textAlignVertical="top"
-              value={symptoms}
-            />
-          </View>
-
-          <View style={styles.panelStrong}>
-            <Text style={styles.panelTitle}>Quick add</Text>
-            <View style={styles.grid}>
-              {QUICK_LOGS.map((item) => (
-                <Pressable key={item.label} onPress={() => appendQuickLog(item.text)} style={styles.gridButton}>
-                  <Text style={styles.gridButtonText}>{item.label}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.panel}>
-            <Text style={styles.panelTitle}>Main entry</Text>
+          <View style={styles.mainPanel}>
+            <Text style={styles.panelTitle}>What did you eat, drink, or measure?</Text>
+            <Text style={styles.panelIntro}>
+              Examples: rice and sweets, 2 small pegs whiskey, 1 large beer, BP 150/95, sugar 180, feeling weak.
+            </Text>
             <TextInput
               multiline
               onChangeText={setInput}
-              placeholder="Example: 2 small pegs whiskey, chips"
+              placeholder="Example: rice and sweets, or 2 small pegs whiskey and chips"
               placeholderTextColor="#94A3B8"
               style={styles.input}
               value={input}
             />
+          </View>
+
+          <View style={styles.panelStrong}>
+            <Text style={styles.panelTitle}>Optional helpers</Text>
+            <Text style={styles.helperText}>Use these only if it feels easier than typing everything in the main note.</Text>
+
+            <View style={styles.helperRow}>
+              <View style={styles.helperField}>
+                <Text style={styles.questionLabel}>BP</Text>
+                <TextInput
+                  onChangeText={setBp}
+                  placeholder="150/95"
+                  placeholderTextColor="#94A3B8"
+                  style={styles.smallInput}
+                  value={bp}
+                />
+              </View>
+              <View style={styles.helperField}>
+                <Text style={styles.questionLabel}>Sugar</Text>
+                <TextInput
+                  onChangeText={setSugar}
+                  placeholder="180"
+                  placeholderTextColor="#94A3B8"
+                  style={styles.smallInput}
+                  value={sugar}
+                />
+              </View>
+            </View>
+
+            <Text style={styles.questionLabel}>Feeling</Text>
+            <View style={styles.inlineButtons}>
+              <Pressable onPress={() => setFeeling("I am feeling normal")} style={styles.inlineButton}>
+                <Text style={styles.inlineButtonText}>Normal</Text>
+              </Pressable>
+              <Pressable onPress={() => setFeeling("feeling dizzy and weak")} style={styles.inlineButton}>
+                <Text style={styles.inlineButtonText}>Dizzy/Weak</Text>
+              </Pressable>
+            </View>
+            <TextInput
+              onChangeText={setFeeling}
+              placeholder="Example: I am feeling normal"
+              placeholderTextColor="#94A3B8"
+              style={styles.smallInput}
+              value={feeling}
+            />
+          </View>
+
+          <View style={styles.panel}>
             <Text style={styles.previewLabel}>What will be analyzed</Text>
             <Text style={styles.previewText}>{combinedPreview || "Nothing added yet."}</Text>
             <Pressable disabled={loading} onPress={() => handleAnalyze()} style={styles.primaryButton}>
-              {loading ? <ActivityIndicator color="#FFF7ED" /> : <Text style={styles.primaryLabel}>Get final guidance</Text>}
+              {loading ? <ActivityIndicator color="#FFF7ED" /> : <Text style={styles.primaryLabel}>Get guidance</Text>}
             </Pressable>
           </View>
 
           <View style={styles.quickWrap}>
-            <Text style={styles.sectionTitle}>Examples</Text>
+            <Text style={styles.sectionTitle}>Try these examples</Text>
             {QUICK_INPUTS.map((item) => (
               <Pressable key={item} onPress={() => setInput(item)} style={styles.quickChip}>
                 <Text style={styles.quickChipText}>{item}</Text>
@@ -243,14 +208,12 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-function buildCombinedEntry({ input, morningSugar, bp, water, symptoms, foodWithDrink }) {
+function buildCombinedEntry({ input, bp, sugar, feeling }) {
   const parts = [];
   if (input?.trim()) parts.push(input.trim());
-  if (morningSugar?.trim()) parts.push(`morning sugar ${morningSugar.trim()}`);
   if (bp?.trim()) parts.push(`BP ${bp.trim()}`);
-  if (water?.trim()) parts.push(water.toLowerCase().includes("water") ? water.trim() : `had ${water.trim()} water`);
-  if (foodWithDrink?.trim()) parts.push(`ate ${foodWithDrink.trim()}`);
-  if (symptoms?.trim()) parts.push(symptoms.trim());
+  if (sugar?.trim()) parts.push(`sugar ${sugar.trim()}`);
+  if (feeling?.trim()) parts.push(feeling.trim());
   return parts.join(", ");
 }
 
@@ -262,7 +225,7 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
   },
   eyebrow: {
-    color: "#FDBA74",
+    color: "#FBBF24",
     fontSize: 14,
     fontWeight: "800",
     letterSpacing: 1.6,
@@ -299,8 +262,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
   },
+  mainPanel: {
+    backgroundColor: "rgba(15, 23, 42, 0.78)",
+    borderRadius: 24,
+    marginTop: 20,
+    padding: 18,
+  },
   panelStrong: {
-    backgroundColor: "rgba(251, 113, 133, 0.14)",
+    backgroundColor: "rgba(59, 130, 246, 0.14)",
     borderRadius: 24,
     marginTop: 20,
     padding: 18,
@@ -317,38 +286,39 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 14,
   },
+  panelIntro: {
+    color: "#CBD5E1",
+    fontSize: 16,
+    lineHeight: 23,
+    marginBottom: 12,
+  },
+  helperText: {
+    color: "#D6E3F3",
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 12,
+  },
   questionLabel: {
     color: "#E2E8F0",
     fontSize: 15,
     fontWeight: "700",
     marginBottom: 6,
-    marginTop: 6,
   },
-  grid: {
+  helperRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
+    gap: 12,
   },
-  gridButton: {
-    backgroundColor: "#1D3557",
-    borderRadius: 16,
-    minWidth: "47%",
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-  },
-  gridButtonText: {
-    color: "#EFF6FF",
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
+  helperField: {
+    flex: 1,
   },
   inlineButtons: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
     marginBottom: 10,
   },
   inlineButton: {
-    backgroundColor: "#17304F",
+    backgroundColor: "#123356",
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -379,22 +349,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 14,
   },
-  largeQuestionInput: {
-    backgroundColor: "#0F172A",
-    borderColor: "#475569",
-    borderRadius: 16,
-    borderWidth: 1,
-    color: "#F8FAFC",
-    fontSize: 16,
-    marginBottom: 10,
-    minHeight: 88,
-    padding: 14,
-  },
   previewLabel: {
     color: "#FDE68A",
     fontSize: 14,
     fontWeight: "700",
-    marginTop: 14,
     marginBottom: 6,
     textTransform: "uppercase",
   },

@@ -15,6 +15,7 @@ export default function ResultScreen({ navigation, route }) {
   const accent = RISK_COLORS[result.risk] || "#F59E0B";
   const alcohol = result.parsed_data.alcohol;
   const needsMoreInfo = result.status === "needs_more_info";
+  const guidance = result.guidance || {};
 
   return (
     <LinearGradient colors={["#07101D", "#0F172A", "#18263F"]} style={styles.bg}>
@@ -45,17 +46,24 @@ export default function ResultScreen({ navigation, route }) {
             </View>
           ) : (
             <>
+              {guidance.what_is_happening ? (
+                <View style={styles.panel}>
+                  <Text style={styles.panelTitle}>What is happening</Text>
+                  <Text style={styles.body}>{guidance.what_is_happening}</Text>
+                </View>
+              ) : null}
+
+              <Section title="Do now" items={guidance.do_now} accent={accent} />
+              <Section title="Eat next" items={guidance.eat_next} accent={accent} />
+              <Section title="Drink now" items={guidance.drink_now} accent={accent} />
+              <Section title="Avoid" items={guidance.avoid} accent={accent} />
+              <Section title="Check again" items={guidance.check_again} accent={accent} />
+              <Section title="Get help now if" items={guidance.when_to_get_help} accent={accent} />
+
               <View style={styles.panel}>
                 <Text style={styles.panelTitle}>Why this result</Text>
                 {result.reasons.map((reason) => (
                   <ActionCard key={reason} title="Reason" body={reason} accent={accent} />
-                ))}
-              </View>
-
-              <View style={styles.panel}>
-                <Text style={styles.panelTitle}>What to do now</Text>
-                {result.actions.map((action) => (
-                  <ActionCard key={action} title="Action" body={action} accent={accent} />
                 ))}
               </View>
 
@@ -94,6 +102,18 @@ export default function ResultScreen({ navigation, route }) {
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
+  );
+}
+
+function Section({ title, items, accent }) {
+  if (!items?.length) return null;
+  return (
+    <View style={styles.panel}>
+      <Text style={styles.panelTitle}>{title}</Text>
+      {items.map((item) => (
+        <ActionCard key={`${title}-${item}`} title={title} body={item} accent={accent} />
+      ))}
+    </View>
   );
 }
 

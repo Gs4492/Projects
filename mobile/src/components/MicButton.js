@@ -1,12 +1,12 @@
-﻿import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function MicButton({ isListening, onPress, transcript }) {
   return (
     <Pressable onPress={onPress} style={[styles.button, isListening ? styles.buttonActive : null]}>
-      <Text style={styles.icon}>{isListening ? "🔴" : "🎤"}</Text>
+      <Text style={styles.icon}>{isListening ? "REC" : "MIC"}</Text>
       <Text style={styles.label}>{isListening ? "Listening... tap to stop" : "Tap to Speak"}</Text>
       <Text style={styles.helper}>
-        {transcript ? transcript : "Say things like: 2 small pegs whiskey, chips, BP 150/95"}
+        {transcript ? transcript : "Say things like: rice and sweets, BP 150/95, sugar 180, 2 glasses water, feeling normal"}
       </Text>
       {isListening ? <View style={styles.pulse} /> : null}
     </Pressable>
@@ -16,7 +16,7 @@ export default function MicButton({ isListening, onPress, transcript }) {
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: "#FB7185",
+    backgroundColor: "#EA580C",
     borderRadius: 28,
     elevation: 2,
     justifyContent: "center",
@@ -30,7 +30,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#DC2626",
   },
   icon: {
-    fontSize: 42,
+    color: "#FFF7ED",
+    fontSize: 28,
+    fontWeight: "900",
     marginBottom: 10,
   },
   label: {

@@ -4,19 +4,31 @@
     "slug": "pulseai-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "plugins": [
       [
         "expo-speech-recognition",
         {
           "microphonePermission": "Allow PulseAI to use the microphone.",
           "speechRecognitionPermission": "Allow PulseAI to recognize speech.",
-          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
         }
       ]
     ],
     "android": {
-      "package": "com.pulseai.mobile"
+      "package": "com.pulseai.mobile",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "62fb91b7-17d7-4bbd-b694-75b1a5c30263"
+      }
     }
   }
 }
