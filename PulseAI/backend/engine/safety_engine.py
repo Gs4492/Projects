@@ -109,6 +109,7 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
         reasons.append("High-salt food can worsen blood pressure.")
         actions.append("Keep the next 1 or 2 meals low in salt.")
     elif salt_level == "medium":
+        risk_score += 1
         reasons.append("Salt intake may add some blood pressure strain.")
 
     if alcohol_units > 0 and salt_level in {"high", "medium"}:
@@ -186,7 +187,7 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
         actions.append("Stay with light food, keep hydrated, and check again later if needed.")
 
     actions = _dedupe(actions)
-    reasons = _dedupe(reasons)
+    reasons = _prioritize_reasons(_dedupe(reasons), risk_score)
 
     risk = _finalize_risk(
         risk_score=risk_score,
@@ -221,7 +222,8 @@ def build_summary(*, risk: str, parsed: ParsedHealthData, actions: list[str], da
     if parsed.morning_sugar_level is not None:
         parts.append(f"Morning sugar {parsed.morning_sugar_level}")
     if parsed.alcohol.alcohol_units:
-        parts.append(f"Alcohol {parsed.alcohol.alcohol_units:.1f} units")
+        readable = parsed.alcohol.drink_type.title() if parsed.alcohol.drink_type else "Alcohol"
+        parts.append(f"{readable} {parsed.alcohol.alcohol_units:.1f} units")
     if parsed.food.salt_level:
         parts.append(f"Salt {parsed.food.salt_level}")
     if daily_memory.entries_today:
@@ -281,6 +283,28 @@ def _add_food_and_drink_guidance(*, actions: list[str], systolic, diastolic, sug
 
     if food_type == "junk":
         actions.append("Try a simple home meal next instead of another fried or packaged snack.")
+
+
+def _prioritize_reasons(reasons: list[str], risk_score: int) -> list[str]:
+    if risk_score <= 0:
+        return reasons
+
+    lowered_risk_markers = [
+        "lower-risk range",
+        "more controlled",
+        "water intake is helping",
+    ]
+
+    important: list[str] = []
+    softer: list[str] = []
+    for reason in reasons:
+        lowered = reason.lower()
+        if any(marker in lowered for marker in lowered_risk_markers):
+            softer.append(reason)
+        else:
+            important.append(reason)
+
+    return important + softer
 
 
 def _dedupe(items: list[str]) -> list[str]:

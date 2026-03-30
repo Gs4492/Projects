@@ -105,7 +105,7 @@ def _heuristic_parse(text: str) -> dict:
     water_ml = _parse_water(lowered)
 
     drink_type = _parse_drink_type(lowered)
-    quantity = _parse_drink_quantity(lowered)
+    quantity = _parse_drink_quantity(lowered, drink_type)
     size_label = _parse_size_label(lowered)
     volume_ml_each = _parse_volume_ml(lowered)
     total_volume_ml = None
@@ -203,19 +203,29 @@ def _parse_bp(text: str) -> tuple[int | None, int | None]:
 
 
 def _parse_water(text: str) -> int | None:
-    match = re.search(r"(\d{2,4})\s*ml\s*(?:water)?", text)
+    match = re.search(r"(\d{2,4})\s*ml\s*(?:of\s+)?water\b", text)
     if match:
         return int(match.group(1))
 
-    if any(token in text for token in ["glass", "glasses"]):
-        count = _extract_quantity(text, ["glass", "glasses"])
-        if count is not None:
-            return int(count * 250)
+    water_number = re.search(r"water[^\d]*(\d{2,4})\s*ml\b", text)
+    if water_number:
+        return int(water_number.group(1))
 
-    if "liter" in text or "litre" in text or "l water" in text:
-        liter_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\b", text)
+    glass_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:glass|glasses)\s*(?:of\s+)?water\b", text)
+    if glass_match:
+        return int(float(glass_match.group(1)) * 250)
+
+    reverse_glass_match = re.search(r"water[^\d]*(\d+(?:\.\d+)?)\s*(?:glass|glasses)\b", text)
+    if reverse_glass_match:
+        return int(float(reverse_glass_match.group(1)) * 250)
+
+    if "liter of water" in text or "litre of water" in text or "water" in text:
+        liter_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\s*(?:of\s+)?water\b", text)
         if liter_match:
             return int(float(liter_match.group(1)) * 1000)
+        reverse_liter_match = re.search(r"water[^\d]*(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\b", text)
+        if reverse_liter_match:
+            return int(float(reverse_liter_match.group(1)) * 1000)
 
     return None
 
@@ -251,12 +261,28 @@ def _parse_drink_type(text: str) -> str | None:
     return None
 
 
-def _parse_drink_quantity(text: str) -> float | None:
-    quantity = _extract_quantity(text, ["peg", "pegs", "beer", "beers", "bottle", "bottles", "glass", "glasses"])
-    if quantity is not None:
-        return quantity
-    if any(token in text for token in ["a beer", "one beer", "a peg", "one peg"]):
-        return 1
+def _parse_drink_quantity(text: str, drink_type: str | None) -> float | None:
+    if drink_type in SPIRIT_TYPES:
+        quantity = _extract_quantity(text, ["peg", "pegs"])
+        if quantity is not None:
+            return quantity
+        if any(token in text for token in ["a peg", "one peg"]):
+            return 1
+
+    if drink_type in BEER_TYPES:
+        quantity = _extract_quantity(text, ["beer", "beers", "bottle", "bottles"])
+        if quantity is not None:
+            return quantity
+        if any(token in text for token in ["a beer", "one beer"]):
+            return 1
+
+    if drink_type in WINE_TYPES:
+        quantity = _extract_quantity(text, ["glass", "glasses"])
+        if quantity is not None:
+            return quantity
+        if any(token in text for token in ["a glass", "one glass"]):
+            return 1
+
     return None
 
 
