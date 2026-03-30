@@ -9,3 +9,9 @@ dist/
 build/
 pulseai.db
 mobile/.expo/
+.expo/
+PulseAI/.env
+PulseAI/mobile/.env
+PulseAI/.venv/
+PulseAI/pulseai.db
+PulseAI/mobile/.expo/

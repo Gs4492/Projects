@@ -5,7 +5,7 @@ from backend.schemas.request_response import ParsedHealthData
 from backend.services.llm_service import try_llm_parse
 
 
-SPIRIT_TYPES = ["whiskey", "whisky", "vodka", "rum", "gin", "brandy"]
+SPIRIT_TYPES = ["whiskey", "whisky", "vodka", "rum", "gin", "brandy", "spirit"]
 BEER_TYPES = ["beer", "lager", "ale", "stout"]
 WINE_TYPES = ["wine"]
 SALTY_FOODS = ["chips", "namkeen", "fries", "salted peanuts", "pickle", "snacks", "papad", "bhujia"]
@@ -74,6 +74,9 @@ def _merge_with_normalization(raw: dict) -> dict:
     size_label = alcohol.get("size_label")
     volume_ml_each = _to_float(alcohol.get("volume_ml_each"))
     total_volume_ml = _to_float(alcohol.get("total_volume_ml"))
+
+    if not drink_type and size_label and "peg" in str(size_label).lower():
+        drink_type = "spirit"
 
     conversion = normalize_alcohol(
         drink_type=drink_type,
@@ -146,29 +149,23 @@ def _heuristic_parse(text: str) -> dict:
     }
 
 
-def normalize_alcohol(
-    *,
-    drink_type: str | None,
-    quantity: float | None,
-    size_label: str | None,
-    volume_ml_each: float | None,
-    total_volume_ml: float | None,
-) -> DrinkConversion:
+def normalize_alcohol(*, drink_type: str | None, quantity: float | None, size_label: str | None, volume_ml_each: float | None, total_volume_ml: float | None) -> DrinkConversion:
     normalized_size = (size_label or "").lower() or None
     if quantity is None:
         quantity = 1 if drink_type else 0
 
     if drink_type in SPIRIT_TYPES:
+        readable_size = normalized_size
         if normalized_size in {"large", "large peg", "big", "double"}:
             volume_ml_each = 60
-            normalized_size = "large peg"
+            readable_size = "large peg"
         elif normalized_size in {"small", "small peg", "single"} or not volume_ml_each:
             volume_ml_each = 30
-            normalized_size = "small peg"
+            readable_size = "small peg"
         total_volume_ml = volume_ml_each * quantity if volume_ml_each else None
-        units = quantity * (2 if normalized_size == "large peg" else 1)
+        units = quantity * (2 if readable_size == "large peg" else 1)
         explanation = "1 small peg = 30 ml, 1 large peg = 60 ml."
-        return DrinkConversion(normalized_size, volume_ml_each, total_volume_ml, units, explanation)
+        return DrinkConversion(readable_size, volume_ml_each, total_volume_ml, units, explanation)
 
     if drink_type in BEER_TYPES or normalized_size in {"small bottle", "large bottle", "half bottle"}:
         if volume_ml_each is None:
@@ -187,13 +184,7 @@ def normalize_alcohol(
             normalized_size = normalized_size or "large bottle"
         total_volume_ml = volume_ml_each * quantity if quantity else total_volume_ml
         explanation = "Small beer = 330 ml, half bottle = about 325 ml, large beer = 650 ml."
-        return DrinkConversion(
-            normalized_size,
-            volume_ml_each,
-            total_volume_ml,
-            quantity * units_per_item if quantity else units_per_item,
-            explanation,
-        )
+        return DrinkConversion(normalized_size, volume_ml_each, total_volume_ml, quantity * units_per_item if quantity else units_per_item, explanation)
 
     if drink_type in WINE_TYPES:
         volume_ml_each = volume_ml_each or 150
@@ -255,6 +246,8 @@ def _parse_drink_type(text: str) -> str | None:
     for drink in SPIRIT_TYPES + BEER_TYPES + WINE_TYPES:
         if drink in text:
             return drink
+    if "peg" in text or "pegs" in text:
+        return "spirit"
     return None
 
 
