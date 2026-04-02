@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple App Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <section class="hero card">
+        <p class="eyebrow">Keep It Simple</p>
+        <h1>Pick your app type, choose your stack, and get the fastest good setup.</h1>
+        <p class="hero-copy">
+          Start with the kind of app you are building. Then use dropdowns for frontend,
+          backend, auth, database, AI, storage, payments, and deployment. Add a short note
+          only if needed.
+        </p>
+      </section>
+
+      <main class="layout">
+        <section class="card input-card">
+          <form id="planner-form">
+            <div class="form-section">
+              <label for="appType">What kind of app are you making?</label>
+              <select id="appType">
+                <option value="simple-website">Simple website / internal tool</option>
+                <option value="saas-dashboard">SaaS / dashboard app</option>
+                <option value="ai-app" selected>AI app</option>
+                <option value="mobile-app">Mobile app</option>
+                <option value="enterprise-system">Enterprise system</option>
+                <option value="marketplace">Marketplace</option>
+              </select>
+            </div>
+
+            <div class="form-section">
+              <label for="frontend">Frontend</label>
+              <select id="frontend">
+                <option value="">Choose automatically</option>
+                <option value="HTML + Bootstrap">HTML + Bootstrap</option>
+                <option value="React">React</option>
+                <option value="Next.js">Next.js</option>
+                <option value="Vue">Vue</option>
+                <option value="Angular">Angular</option>
+                <option value="React Native">React Native</option>
+              </select>
+            </div>
+
+            <div class="form-section">
+              <label for="backend">Backend</label>
+              <select id="backend">
+                <option value="">Choose automatically</option>
+                <option value="FastAPI">FastAPI</option>
+                <option value="Flask">Flask</option>
+                <option value="Django">Django</option>
+                <option value="Express">Express</option>
+                <option value="NestJS">NestJS</option>
+                <option value="Spring Boot">Spring Boot</option>
+              </select>
+            </div>
+
+            <div class="form-section two-col">
+              <div>
+                <label for="auth">Auth</label>
+                <select id="auth">
+                  <option value="">Choose automatically</option>
+                  <option value="Clerk">Clerk</option>
+                  <option value="JWT">JWT</option>
+                  <option value="Session auth">Session auth</option>
+                  <option value="Firebase Auth">Firebase Auth</option>
+                  <option value="Auth0">Auth0</option>
+                </select>
+              </div>
+              <div>
+                <label for="database">Database</label>
+                <select id="database">
+                  <option value="">Choose automatically</option>
+                  <option value="SQLite">SQLite</option>
+                  <option value="PostgreSQL">PostgreSQL</option>
+                  <option value="PostgreSQL + pgvector">PostgreSQL + pgvector</option>
+                  <option value="MongoDB">MongoDB</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section two-col">
+              <div>
+                <label for="realtime">Realtime</label>
+                <select id="realtime">
+                  <option value="">Choose automatically</option>
+                  <option value="Not needed">Not needed</option>
+                  <option value="Supabase Realtime">Supabase Realtime</option>
+                  <option value="Firebase Realtime">Firebase Realtime</option>
+                  <option value="Socket.io">Socket.io</option>
+                  <option value="WebSockets">WebSockets</option>
+                </select>
+              </div>
+              <div>
+                <label for="ai">AI</label>
+                <select id="ai">
+                  <option value="">Choose automatically</option>
+                  <option value="Not needed">Not needed</option>
+                  <option value="NVIDIA API">NVIDIA API</option>
+                  <option value="OpenAI API">OpenAI API</option>
+                  <option value="pgvector retrieval">pgvector retrieval</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section two-col">
+              <div>
+                <label for="storage">Storage</label>
+                <select id="storage">
+                  <option value="">Choose automatically</option>
+                  <option value="Not needed">Not needed</option>
+                  <option value="Cloudinary">Cloudinary</option>
+                  <option value="S3">S3</option>
+                  <option value="Supabase Storage">Supabase Storage</option>
+                </select>
+              </div>
+              <div>
+                <label for="payments">Payments</label>
+                <select id="payments">
+                  <option value="">Choose automatically</option>
+                  <option value="Not needed">Not needed</option>
+                  <option value="Razorpay">Razorpay</option>
+                  <option value="Stripe">Stripe</option>
+                  <option value="Paddle">Paddle</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label for="deployment">Deployment</label>
+              <select id="deployment">
+                <option value="">Choose automatically</option>
+                <option value="Vercel">Vercel</option>
+                <option value="Vercel + Render">Vercel + Render</option>
+                <option value="Railway">Railway</option>
+                <option value="AWS">AWS</option>
+                <option value="Azure">Azure</option>
+                <option value="GCP">GCP</option>
+              </select>
+            </div>
+
+            <div class="form-section">
+              <label for="appIdea">Anything else I should know? (optional)</label>
+              <textarea id="appIdea" rows="4" placeholder="Example: keep it cheap, beginner-friendly, and easy to deploy"></textarea>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="primary-btn">Give Me The Simplest Good Setup</button>
+            </div>
+          </form>
+
+          <section class="help-strip">
+            <strong>Good example</strong>
+            <p>App type: AI app</p>
+            <p>Frontend: React</p>
+            <p>Backend: FastAPI</p>
+            <p>Auth: JWT</p>
+            <p>Database: SQLite</p>
+          </section>
+        </section>
+
+        <section class="card result-card">
+          <p class="eyebrow">Plan</p>
+          <h2>Your app setup</h2>
+          <p id="status-text" class="status-text">Choose your app type and stack, then generate a plan.</p>
+
+          <div id="result-grid" class="result-grid empty">
+            <div class="result-placeholder">
+              Your recommended frontend, backend, auth, database, AI, storage, payments, and deployment will appear here.
+            </div>
+          </div>
+
+          <div id="summary-panel" class="summary-panel hidden">
+            <h3>Why this setup</h3>
+            <p id="summary-text"></p>
+          </div>
+
+          <div id="next-steps-panel" class="summary-panel accent hidden">
+            <h3>First build steps</h3>
+            <div id="next-steps-list" class="list-block"></div>
+          </div>
+
+          <div id="alternatives-panel" class="summary-panel hidden">
+            <h3>Only change these if needed</h3>
+            <div id="alternatives-list" class="list-block"></div>
+          </div>
+
+          <div id="architecture-panel" class="summary-panel hidden">
+            <h3>Recommended architecture</h3>
+            <p id="architecture-text"></p>
+          </div>
+
+          <div id="structure-panel" class="summary-panel hidden">
+            <h3>Project structure</h3>
+            <div id="structure-list" class="list-block"></div>
+          </div>
+
+          <div id="notes-panel" class="summary-panel hidden">
+            <h3>Watchouts</h3>
+            <div id="notes-list" class="list-block"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+
+
