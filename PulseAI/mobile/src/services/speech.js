@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
 
 let speechModule = null;
@@ -13,6 +13,10 @@ try {
   useSpeechRecognitionEventHook = null;
 }
 
+const LISTENING_GRACE_MS = 10000;
+const COMPLETE_SILENCE_MS = 12000;
+const POSSIBLY_COMPLETE_SILENCE_MS = 8000;
+
 function useOptionalSpeechEvent(eventName, handler) {
   if (useSpeechRecognitionEventHook) {
     useSpeechRecognitionEventHook(eventName, handler);
@@ -25,6 +29,7 @@ export function useSpeechToText() {
   const [speechError, setSpeechError] = useState("");
   const [isAvailable, setIsAvailable] = useState(false);
   const [needsDevBuild, setNeedsDevBuild] = useState(false);
+  const listeningStartedAt = useRef(0);
 
   useEffect(() => {
     let mounted = true;
@@ -60,6 +65,7 @@ export function useSpeechToText() {
   }, []);
 
   useOptionalSpeechEvent("start", () => {
+    listeningStartedAt.current = Date.now();
     setSpeechError("");
     setTranscript("");
     setIsListening(true);
@@ -78,7 +84,21 @@ export function useSpeechToText() {
 
   useOptionalSpeechEvent("error", (event) => {
     setIsListening(false);
-    setSpeechError(event?.message || "Speech recognition failed.");
+
+    const rawMessage = event?.message || "Speech recognition failed.";
+    const normalized = rawMessage.toLowerCase();
+    const listenedFor = Date.now() - listeningStartedAt.current;
+
+    if (normalized.includes("no speech") || normalized.includes("no match")) {
+      if (listenedFor < LISTENING_GRACE_MS) {
+        setSpeechError("I did not catch that clearly. Please tap again and speak after the beep.");
+      } else {
+        setSpeechError("No speech was heard. Please tap again and speak clearly.");
+      }
+      return;
+    }
+
+    setSpeechError(rawMessage);
   });
 
   const startListening = useCallback(async () => {
@@ -107,8 +127,8 @@ export function useSpeechToText() {
       addsPunctuation: true,
       requiresOnDeviceRecognition: false,
       androidIntentOptions: {
-        EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 1500,
-        EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 1500,
+        EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: COMPLETE_SILENCE_MS,
+        EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: POSSIBLY_COMPLETE_SILENCE_MS,
       },
       contextualStrings: [
         "blood pressure",
