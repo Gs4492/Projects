@@ -96,8 +96,13 @@ export default function HomeScreen({ navigation }) {
       <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.hero}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>PulseAI</Text>
+            <View style={styles.heroTopRow}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>PulseAI</Text>
+              </View>
+              <Pressable onPress={() => navigation.navigate("History")} style={styles.heroHistoryButton}>
+                <Text style={styles.heroHistoryLabel}>View history</Text>
+              </Pressable>
             </View>
             <Text style={styles.title}>Log each part separately so the guidance feels clearer.</Text>
             <Text style={styles.subtitle}>
@@ -185,9 +190,6 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.sectionEyebrow}>Preview</Text>
                 <Text style={styles.sectionTitle}>What will be analyzed</Text>
               </View>
-              <Pressable onPress={() => navigation.navigate("History")} style={styles.ghostButton}>
-                <Text style={styles.ghostButtonText}>History</Text>
-              </Pressable>
             </View>
             <Text style={styles.previewText}>{combinedPreview || "Your food, drinks, readings, and feeling will be combined here before analysis."}</Text>
             <Pressable disabled={loading} onPress={handleAnalyze} style={styles.primaryButton}>
@@ -229,13 +231,13 @@ function MetricField({ label, placeholder, value, onChangeText }) {
 
 function buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }) {
   const parts = [];
-  if (food?.trim()) parts.push(`ate ${food.trim()}`);
-  if (drinks?.trim()) parts.push(`had ${drinks.trim()}`);
-  if (bp?.trim()) parts.push(`BP ${bp.trim()}`);
-  if (sugar?.trim()) parts.push(`sugar ${sugar.trim()}`);
-  if (water?.trim()) parts.push(water.toLowerCase().includes("water") ? water.trim() : `water ${water.trim()}`);
-  if (feeling?.trim()) parts.push(feeling.trim());
-  return parts.join(", ");
+  if (food?.trim()) parts.push(`Food: ${food.trim()}`);
+  if (drinks?.trim()) parts.push(`Drinks: ${drinks.trim()}`);
+  if (bp?.trim()) parts.push(`BP: ${bp.trim()}`);
+  if (sugar?.trim()) parts.push(`Sugar: ${sugar.trim()}`);
+  if (water?.trim()) parts.push(`Water: ${water.trim()}`);
+  if (feeling?.trim()) parts.push(`Feeling: ${feeling.trim()}`);
+  return parts.join(" | ");
 }
 
 const styles = StyleSheet.create({
@@ -248,13 +250,29 @@ const styles = StyleSheet.create({
   hero: {
     marginBottom: 18,
   },
+  heroTopRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
   badge: {
     alignSelf: "flex-start",
     backgroundColor: "rgba(251, 191, 36, 0.14)",
     borderRadius: 999,
-    marginBottom: 14,
     paddingHorizontal: 14,
     paddingVertical: 8,
+  },
+  heroHistoryButton: {
+    backgroundColor: "rgba(30, 41, 59, 0.9)",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  heroHistoryLabel: {
+    color: "#E2E8F0",
+    fontSize: 14,
+    fontWeight: "800",
   },
   badgeText: {
     color: "#FCD34D",
@@ -442,15 +460,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "900",
   },
-  ghostButton: {
-    backgroundColor: "rgba(30, 41, 59, 0.9)",
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  ghostButtonText: {
-    color: "#E2E8F0",
-    fontSize: 14,
-    fontWeight: "800",
-  },
 });
+
+

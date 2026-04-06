@@ -29,7 +29,50 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
         )
 
     parsed = response.parsed_data
-    what_is_happening = " ".join(response.reasons[:3]) if response.reasons else "This entry needs attention."
+    bp = parsed.bp
+    alcohol_units = parsed.alcohol.alcohol_units or 0
+    drink_type = parsed.alcohol.drink_type.title() if parsed.alcohol.drink_type else "alcohol"
+    sugar = parsed.sugar_level
+    morning_sugar = parsed.morning_sugar_level
+    salt_level = parsed.food.salt_level
+    food_type = parsed.food.food_type
+    water_ml = parsed.water_ml or 0
+    symptoms = parsed.symptoms
+
+    what_bits: list[str] = []
+    if bp.systolic and bp.diastolic:
+        if bp.systolic >= 160 or bp.diastolic >= 100:
+            what_bits.append(f"Blood pressure is in a clearly high range at {bp.systolic}/{bp.diastolic}.")
+        elif bp.systolic >= 140 or bp.diastolic >= 90:
+            what_bits.append(f"Blood pressure is elevated at {bp.systolic}/{bp.diastolic}.")
+        else:
+            what_bits.append(f"Blood pressure is currently steadier at {bp.systolic}/{bp.diastolic}.")
+
+    if sugar is not None:
+        if sugar >= 250:
+            what_bits.append(f"Current sugar is very high at {sugar}.")
+        elif sugar >= 180:
+            what_bits.append(f"Current sugar is high at {sugar}.")
+        elif sugar < 70:
+            what_bits.append(f"Current sugar is low at {sugar}.")
+        else:
+            what_bits.append(f"Current sugar is more controlled at {sugar}.")
+    elif morning_sugar is not None:
+        if morning_sugar >= 180:
+            what_bits.append(f"Morning sugar already started high at {morning_sugar}.")
+        elif morning_sugar >= 140:
+            what_bits.append(f"Morning sugar is mildly elevated at {morning_sugar}.")
+
+    if alcohol_units > 0:
+        what_bits.append(f"{drink_type} intake is about {alcohol_units:.1f} alcohol unit{'s' if alcohol_units != 1 else ''}.")
+
+    if alcohol_units > 0 and salt_level in {"high", "medium"}:
+        what_bits.append("Alcohol plus salty food can push blood pressure and dehydration risk higher.")
+    elif salt_level == "high":
+        what_bits.append("Salty food may make blood pressure control harder.")
+
+    if symptoms and "normal" not in symptoms:
+        what_bits.append(f"Symptoms reported today: {', '.join(symptoms[:3])}.")
 
     do_now: list[str] = []
     eat_next: list[str] = []
@@ -53,35 +96,70 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
         else:
             do_now.append(action)
 
-    if parsed.alcohol.alcohol_units > 0 and not any("alcohol" in item.lower() or parsed.alcohol.drink_type and parsed.alcohol.drink_type.lower() in item.lower() for item in avoid + do_now + drink_now):
-        readable = parsed.alcohol.drink_type.title() if parsed.alcohol.drink_type else "alcohol"
-        if parsed.alcohol.alcohol_units <= 1:
-            avoid.insert(0, f"Keep {readable} limited today and avoid mixing it with salty food.")
+    if alcohol_units > 0:
+        if alcohol_units >= 2:
+            do_now.insert(0, f"Stop at this amount of {drink_type.lower()} for now and do not add another drink yet.")
         else:
-            avoid.insert(0, f"Do not add more {readable} right now.")
+            do_now.insert(0, f"Keep {drink_type.lower()} limited and do not stack it with more salty snacks.")
 
-    if parsed.food.food_type and not eat_next:
-        if parsed.food.food_type == "junk":
-            eat_next.append("Next meal: choose simple home food instead of another fried or packaged snack.")
-        elif parsed.food.food_type == "carb-heavy":
-            eat_next.append("Next meal: keep it lighter with vegetables, dal, eggs, or salad.")
+    if bp.systolic and bp.diastolic and (bp.systolic >= 140 or bp.diastolic >= 90):
+        do_now.insert(0, "Sit quietly, avoid more strain, and keep the rest of the day simple.")
+        if not check_again:
+            check_again.append("Recheck blood pressure after resting quietly for 30 to 60 minutes.")
 
-    if parsed.bp.systolic and parsed.bp.diastolic and parsed.bp.systolic >= 140 and not check_again:
-        check_again.append("Recheck blood pressure later today after resting quietly.")
+    if sugar is not None and sugar >= 180:
+        do_now.insert(0, "Keep the next few hours simple and do not add sweets or another heavy carb-heavy meal.")
+        if not check_again:
+            check_again.append("Recheck sugar later if you normally monitor it or if symptoms change.")
+    elif sugar is not None and sugar < 70:
+        do_now.insert(0, "Take fast sugar now and do not delay a recheck.")
 
-    if parsed.alcohol.alcohol_units > 0 and not drink_now:
-        drink_now.append("Drink water now rather than another alcoholic or sugary drink.")
+    if alcohol_units > 0:
+        target_water = min(max(int(alcohol_units * 300), 300), 1200)
+        drink_now.insert(0, f"Drink about {target_water} ml of water over the next 1 to 2 hours.")
+        drink_now.append("Use water first, not another alcoholic, energy, or sugary drink.")
+    elif water_ml and water_ml < 500 and response.risk != "LOW":
+        drink_now.insert(0, "Increase water gradually over the next hour unless a doctor has told you to restrict fluids.")
+
+    if salt_level == "high" or (bp.systolic and bp.diastolic and (bp.systolic >= 140 or bp.diastolic >= 90)):
+        eat_next.insert(0, "Next meal: choose dal, vegetables, curd, fruit, or plain home food with less salt.")
+        avoid.insert(0, "Avoid chips, namkeen, pickle, papad, fried snacks, and restaurant salty food for the rest of the day.")
+
+    sugar_concern = (sugar is not None and sugar >= 180) or (morning_sugar is not None and morning_sugar >= 180)
+    if sugar_concern:
+        eat_next.insert(0, "Next meal: prefer vegetables, dal, eggs, grilled protein, or salad instead of sweets or a heavy rice meal.")
+        avoid.append("Avoid sweets, dessert, sugary drinks, and a large carb-heavy meal for now.")
+    elif food_type == "junk":
+        eat_next.insert(0, "Next meal: switch to simple home food instead of another fried or packaged snack.")
+    elif food_type == "carb-heavy":
+        eat_next.insert(0, "Next meal: keep it lighter with vegetables, dal, eggs, or salad.")
+
+    if alcohol_units > 0:
+        if alcohol_units <= 1:
+            avoid.insert(0, f"Do not combine more {drink_type.lower()} with salty food later today.")
+        else:
+            avoid.insert(0, f"Do not take more {drink_type.lower()} for the rest of today.")
+
+    if symptoms and "normal" not in symptoms:
+        when_to_get_help.insert(0, "Get help now if symptoms suddenly worsen, feel severe, or include chest pain, confusion, fainting, or trouble breathing.")
+    elif response.risk == "HIGH":
+        when_to_get_help.insert(0, "Get urgent medical help if readings keep rising or you start feeling faint, confused, breathless, or have chest discomfort.")
+
+    if response.daily_memory.entries_today > 0 and response.risk != "LOW":
+        do_now.append("This is not the first entry today, so treat the whole-day pattern seriously.")
 
     if not do_now and response.actions:
         do_now = response.actions[:2]
 
+    what_is_happening = " ".join(_dedupe(what_bits)[:4]) if what_bits else "This entry needs attention."
+
     return GuidanceSections(
         what_is_happening=what_is_happening,
-        do_now=_dedupe(do_now)[:3],
+        do_now=_dedupe(do_now)[:4],
         eat_next=_dedupe(eat_next)[:3],
         drink_now=_dedupe(drink_now)[:3],
         avoid=_dedupe(avoid)[:4],
-        check_again=_dedupe(check_again)[:2],
+        check_again=_dedupe(check_again)[:3],
         when_to_get_help=_dedupe(when_to_get_help)[:2],
     )
 
