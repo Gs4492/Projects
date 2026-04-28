@@ -1,0 +1,364 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(224, 120, 58, 0.18), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(25, 110, 205, 0.18), transparent 24%),
+    linear-gradient(180deg, #f8f2e8 0%, #edf2f8 100%);
+  color: #10233b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+.page-shell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 40px 18px 64px;
+}
+
+.hero-card,
+.panel,
+.subpanel,
+.stat-card,
+.artifact-card,
+.lesson-card {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(16, 35, 59, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(16, 35, 59, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.hero-card,
+.panel {
+  padding: 24px;
+}
+
+.hero-topline,
+.panel-header,
+.task-topline,
+.timeline-topline,
+.route-chip-row,
+.file-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  color: #b45714;
+  font-weight: 700;
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 10px;
+  font-size: clamp(2.4rem, 4vw, 4.4rem);
+  line-height: 0.95;
+  max-width: 740px;
+}
+
+h2 {
+  margin-bottom: 0;
+}
+
+.hero-copy,
+.result-copy,
+.summary-copy,
+.empty-state,
+.task-card p,
+.timeline-card p,
+.log-entry p,
+.lesson-card p,
+.artifact-card p,
+.file-heading span {
+  color: #435b73;
+  line-height: 1.55;
+}
+
+.goal-form {
+  margin-top: 24px;
+  display: grid;
+  gap: 14px;
+}
+
+.goal-form textarea {
+  min-height: 132px;
+  resize: vertical;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 35, 59, 0.12);
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.goal-form button {
+  width: fit-content;
+  padding: 14px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0f6cbd, #154d87);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.goal-form button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.stats-grid,
+.dashboard-grid,
+.deliverable-grid,
+.critic-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.stats-grid {
+  margin-top: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stat-card {
+  padding: 16px 18px;
+}
+
+.stat-card span {
+  display: block;
+  color: #5e7085;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.35rem;
+  text-transform: capitalize;
+}
+
+.dashboard-grid {
+  margin-top: 20px;
+}
+
+.primary-grid {
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.9fr);
+}
+
+.secondary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.deliverables-panel {
+  overflow: hidden;
+}
+
+.deliverable-grid {
+  margin-top: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.subpanel {
+  padding: 18px;
+  box-shadow: none;
+}
+
+.wide-subpanel {
+  grid-column: 1 / -1;
+}
+
+.artifact-card,
+.lesson-card {
+  padding: 16px;
+  box-shadow: none;
+}
+
+.artifact-card + .artifact-card,
+.lesson-card {
+  margin-top: 12px;
+}
+
+.clean-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #364d64;
+  line-height: 1.55;
+}
+
+.compact-list,
+.timeline-list,
+.log-list {
+  display: grid;
+  gap: 12px;
+}
+
+.task-card,
+.timeline-card,
+.log-entry {
+  border: 1px solid rgba(16, 35, 59, 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.task-preview {
+  margin-top: 10px;
+  color: #1f3f64;
+  font-weight: 600;
+}
+
+.status-pill,
+.task-status,
+.route-method,
+.route-path {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-queued,
+.task-pending {
+  background: #f2e8cf;
+  color: #875d07;
+}
+
+.status-running,
+.task-in_progress {
+  background: #dcecff;
+  color: #0f5ea5;
+}
+
+.status-completed,
+.task-completed {
+  background: #dcefe1;
+  color: #1f6a34;
+}
+
+.task-needs_revision {
+  background: #fde3e3;
+  color: #982f2f;
+}
+
+.route-method {
+  background: rgba(15, 108, 189, 0.14);
+  color: #0f5ea5;
+}
+
+.route-path {
+  background: rgba(180, 87, 20, 0.12);
+  color: #8b4b17;
+}
+
+.timeline-task_update {
+  border-left: 4px solid #0f6cbd;
+}
+
+.timeline-artifact {
+  border-left: 4px solid #1f6a34;
+}
+
+.timeline-retry {
+  border-left: 4px solid #c36a15;
+}
+
+.timeline-memory {
+  border-left: 4px solid #6f46b2;
+}
+
+.log-agent {
+  display: inline-block;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #aa5d16;
+}
+
+.task-output,
+.mini-code {
+  margin: 12px 0 0;
+  padding: 14px;
+  border-radius: 16px;
+  background: #0f1a2a;
+  color: #e7edf5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.lesson-card {
+  background: linear-gradient(135deg, rgba(255, 248, 226, 0.95), rgba(239, 244, 252, 0.95));
+}
+
+@media (max-width: 1080px) {
+  .primary-grid,
+  .secondary-grid,
+  .stats-grid,
+  .deliverable-grid,
+  .critic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wide-subpanel {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-shell {
+    padding: 22px 14px 40px;
+  }
+
+  .hero-card,
+  .panel {
+    padding: 18px;
+  }
+
+  h1 {
+    font-size: 2.3rem;
+  }
+
+  .hero-topline,
+  .panel-header,
+  .task-topline,
+  .timeline-topline,
+  .route-chip-row,
+  .file-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

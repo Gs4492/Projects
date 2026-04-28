@@ -43,6 +43,18 @@ NUMBER_WORDS = {
     "ten": 10,
     "half": 0.5,
 }
+SECTION_KEYS = {
+    "food": "food",
+    "drinks": "drinks",
+    "drink": "drinks",
+    "bp": "bp",
+    "blood pressure": "bp",
+    "sugar": "sugar",
+    "glucose": "sugar",
+    "water": "water",
+    "feeling": "feeling",
+    "symptoms": "feeling",
+}
 
 
 @dataclass
@@ -99,15 +111,24 @@ def _merge_with_normalization(raw: dict) -> dict:
 
 def _heuristic_parse(text: str) -> dict:
     lowered = text.lower()
-    systolic, diastolic = _parse_bp(lowered)
-    morning_sugar = _parse_morning_sugar(lowered)
-    sugar = _parse_current_sugar(lowered, morning_sugar)
-    water_ml = _parse_water(lowered)
+    sections = _extract_sections(text)
 
-    drink_type = _parse_drink_type(lowered)
-    quantity = _parse_drink_quantity(lowered, drink_type)
-    size_label = _parse_size_label(lowered)
-    volume_ml_each = _parse_volume_ml(lowered)
+    food_text = sections.get("food", lowered)
+    drinks_text = sections.get("drinks", lowered)
+    bp_text = sections.get("bp", lowered)
+    sugar_text = sections.get("sugar", lowered)
+    water_text = sections.get("water") or sections.get("drinks", lowered)
+    feeling_text = sections.get("feeling", lowered)
+
+    systolic, diastolic = _parse_bp(bp_text)
+    morning_sugar = _parse_morning_sugar(sugar_text if sugar_text != lowered else lowered)
+    sugar = _parse_current_sugar(sugar_text if sugar_text != lowered else lowered, morning_sugar)
+    water_ml = _parse_water(water_text)
+
+    drink_type = _parse_drink_type(drinks_text)
+    quantity = _parse_drink_quantity(drinks_text, drink_type)
+    size_label = _parse_size_label(drinks_text)
+    volume_ml_each = _parse_volume_ml(drinks_text)
     total_volume_ml = None
     if volume_ml_each is not None and quantity is not None:
         total_volume_ml = volume_ml_each * quantity
@@ -120,10 +141,10 @@ def _heuristic_parse(text: str) -> dict:
         total_volume_ml=total_volume_ml,
     )
 
-    food_items = [food for food in SALTY_FOODS + JUNK_FOODS + CARB_FOODS if food in lowered]
-    food_type = _derive_food_type(lowered)
-    salt_level = _derive_salt_level(lowered, food_items)
-    symptoms = _parse_symptoms(lowered)
+    food_items = [food for food in SALTY_FOODS + JUNK_FOODS + CARB_FOODS if food in food_text]
+    food_type = _derive_food_type(food_text)
+    salt_level = _derive_salt_level(food_text, food_items)
+    symptoms = _parse_symptoms(feeling_text)
 
     return {
         "bp": {"systolic": systolic, "diastolic": diastolic},
@@ -207,22 +228,23 @@ def _parse_water(text: str) -> int | None:
     if match:
         return int(match.group(1))
 
-    water_number = re.search(r"water[^\d]*(\d{2,4})\s*ml\b", text)
-    if water_number:
-        return int(water_number.group(1))
+    ml_only_match = re.search(r"(\d{2,4})\s*ml\b", text)
+    if ml_only_match and "water" in text:
+        return int(ml_only_match.group(1))
 
     glass_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:glass|glasses)\s*(?:of\s+)?water\b", text)
     if glass_match:
         return int(float(glass_match.group(1)) * 250)
 
-    reverse_glass_match = re.search(r"water[^\d]*(\d+(?:\.\d+)?)\s*(?:glass|glasses)\b", text)
-    if reverse_glass_match:
-        return int(float(reverse_glass_match.group(1)) * 250)
+    if "water" in text:
+        reverse_glass_match = re.search(r"water[^\d]*(\d+(?:\.\d+)?)\s*(?:glass|glasses)\b", text)
+        if reverse_glass_match:
+            return int(float(reverse_glass_match.group(1)) * 250)
 
-    if "liter of water" in text or "litre of water" in text or "water" in text:
         liter_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\s*(?:of\s+)?water\b", text)
         if liter_match:
             return int(float(liter_match.group(1)) * 1000)
+
         reverse_liter_match = re.search(r"water[^\d]*(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\b", text)
         if reverse_liter_match:
             return int(float(reverse_liter_match.group(1)) * 1000)
@@ -315,11 +337,28 @@ def _parse_symptoms(text: str) -> list[str]:
     if any(phrase in text for phrase in NORMAL_FEELING_PHRASES):
         return ["normal"]
 
+    normalized = text.strip().lower()
+    if normalized in NORMAL_FEELING_STANDALONE:
+        return ["normal"]
+
     segments = [segment.strip() for segment in text.split(",")]
     if any(segment in NORMAL_FEELING_STANDALONE for segment in segments):
         return ["normal"]
 
     return []
+
+
+def _extract_sections(text: str) -> dict[str, str]:
+    sections: dict[str, str] = {}
+    for part in text.split("|"):
+        piece = part.strip()
+        if ":" not in piece:
+            continue
+        label, value = piece.split(":", 1)
+        normalized = SECTION_KEYS.get(label.strip().lower())
+        if normalized and value.strip():
+            sections[normalized] = value.strip().lower()
+    return sections
 
 
 def _extract_number_after_keywords(text: str, keywords: list[str]) -> int | None:
