@@ -66,8 +66,8 @@ export default function HomeScreen({ navigation }) {
       navigation.navigate("Result", { result, inputText: combined });
     } catch (error) {
       Alert.alert(
-        "Could not connect",
-        "The phone could not reach the backend. Check internet or backend URL and try again."
+        "Taking too long",
+        "The server may be waking up. Please wait 30 seconds and try again."
       );
     } finally {
       setLoading(false);
