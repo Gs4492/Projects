@@ -229,13 +229,13 @@ function MetricField({ label, placeholder, value, onChangeText }) {
 
 function buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }) {
   const parts = [];
-  if (food?.trim()) parts.push(`ate ${food.trim()}`);
-  if (drinks?.trim()) parts.push(`had ${drinks.trim()}`);
-  if (bp?.trim()) parts.push(`BP ${bp.trim()}`);
-  if (sugar?.trim()) parts.push(`sugar ${sugar.trim()}`);
-  if (water?.trim()) parts.push(water.toLowerCase().includes("water") ? water.trim() : `water ${water.trim()}`);
-  if (feeling?.trim()) parts.push(feeling.trim());
-  return parts.join(", ");
+  if (food?.trim()) parts.push(`Food: ${food.trim()}`);
+  if (drinks?.trim()) parts.push(`Drinks: ${drinks.trim()}`);
+  if (bp?.trim()) parts.push(`BP: ${bp.trim()}`);
+  if (sugar?.trim()) parts.push(`Sugar: ${sugar.trim()}`);
+  if (water?.trim()) parts.push(`Water: ${water.trim()}`);
+  if (feeling?.trim()) parts.push(`Feeling: ${feeling.trim()}`);
+  return parts.join(" | ");
 }
 
 const styles = StyleSheet.create({
