@@ -1,4 +1,8 @@
-﻿from pydantic_settings import BaseSettings, SettingsConfigDict
+﻿from pathlib import Path
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
@@ -11,10 +15,15 @@ class Settings(BaseSettings):
     request_timeout_seconds: int = 20
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=BASE_DIR / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
 
 settings = Settings()
+
+
+# ✅ SAFE DEBUG (no secrets)
+print("ENV PATH:", BASE_DIR / ".env")
+print("NVIDIA API KEY PRESENT:", bool(settings.nvidia_api_key))

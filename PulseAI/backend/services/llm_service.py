@@ -1,19 +1,34 @@
 import json
-
 import httpx
 
 from backend.config import settings
 
 
 PARSE_SYSTEM_PROMPT = (
-    "You extract structured health tracking data from casual user messages. "
-    "Return only valid JSON. Use null when unknown. "
-    "Capture blood pressure, current sugar, morning sugar, alcohol type, quantity, peg or bottle size, ml if mentioned, water, food items, salt level, food type, symptoms, and notes."
+    "You are a strict health data parser.\n\n"
+
+    "INPUT FORMAT:\n"
+    "The user provides structured text like:\n"
+    "Food: ... | Drinks: ... | BP: ... | Sugar: ... | Water: ... | Feeling: ...\n\n"
+
+    "RULES:\n"
+    "- ALWAYS extract values if present\n"
+    "- NEVER return null if a value exists in the text\n"
+    "- If a number appears (like 144), you MUST capture it\n"
+    "- BP like 138/75 must always be extracted\n"
+    "- Sugar like 144 must always be extracted even if no keyword nearby\n"
+    "- Water like '2 glasses' should be converted to ml (1 glass = 250 ml)\n"
+    "- If user says 'feeling normal', return symptoms as ['normal']\n"
+    "- Only use null when the value is truly missing\n\n"
+
+    "OUTPUT:\n"
+    "Return ONLY valid JSON. No explanation."
 )
 
 
 async def try_llm_parse(text: str) -> dict | None:
     if not settings.nvidia_api_key:
+        print("LLM SKIPPED: No API key")
         return None
 
     prompt = (
@@ -25,36 +40,81 @@ async def try_llm_parse(text: str) -> dict | None:
         "If user says they feel normal, put ['normal'] in symptoms. "
         f"Message: {text}"
     )
-    return await _chat_json(system_prompt=PARSE_SYSTEM_PROMPT, user_prompt=prompt, max_tokens=500)
+
+    return await _chat_json(
+        system_prompt=PARSE_SYSTEM_PROMPT,
+        user_prompt=prompt,
+        max_tokens=500,
+    )
 
 
-async def try_llm_guidance(*, text: str, risk: str, reasons: list[str], actions: list[str], knowledge: list[str], daily_summary: str | None = None) -> str | None:
+async def try_llm_guidance(
+    *,
+    text: str,
+    risk: str,
+    reasons: list[str],
+    actions: list[str],
+    knowledge: list[str],
+    daily_summary: str | None = None,
+) -> str | None:
+
     if not settings.nvidia_api_key:
+        print("LLM SKIPPED: No API key")
         return None
 
     user_prompt = (
-        "Create a short health guidance message for a non-technical older adult. "
-        "Do not diagnose. Do not add facts outside the provided context. "
-        "Keep it under 110 words. Mention the main risk, the best drink right now, the best next meal direction, and when to recheck if the actions mention it. "
-        f"Original input: {text}\n"
-        f"Risk: {risk}\n"
-        f"Reasons: {json.dumps(reasons)}\n"
-        f"Actions: {json.dumps(actions)}\n"
-        f"Context: {json.dumps(knowledge)}\n"
-        f"Today so far: {daily_summary or 'No earlier entries today.'}"
+        "You are a practical health assistant.\n\n"
+
+        "Your job is to give SPECIFIC, situation-aware guidance.\n"
+        "Do NOT be generic.\n\n"
+
+        "Rules:\n"
+        "- Use the exact numbers provided (BP, sugar, water, alcohol)\n"
+        "- Explain what those numbers mean in simple terms\n"
+        "- Combine factors (e.g., BP + coffee, sugar + carbs, alcohol + salt)\n"
+        "- Give clear next steps (what to eat, what to drink, what to avoid)\n"
+        "- Mention timing if relevant (rest now, recheck later)\n"
+        "- Keep tone simple, direct, and helpful\n"
+        "- Max 110 words\n\n"
+
+        "Examples of GOOD guidance:\n"
+        "- 'Sugar 144 after rice is borderline. Avoid sweets for the rest of the day.'\n"
+        "- 'BP 138/75 with coffee is mildly elevated. Switch to water and avoid more caffeine today.'\n"
+        "- 'Alcohol with salty snacks can push BP higher tonight. Stop here and hydrate.'\n\n"
+
+        f"Original input: {text}\n\n"
+
+        "Observed situation:\n"
+        f"- Risk level: {risk}\n"
+        f"- Key observations: {json.dumps(reasons)}\n"
+        f"- Current recommendations (may be generic): {json.dumps(actions)}\n"
+        f"- Context info: {json.dumps(knowledge)}\n"
+        f"- Today so far: {daily_summary or 'No earlier entries today.'}\n\n"
+
+        "Your task:\n"
+        "Do NOT repeat the recommendations blindly.\n"
+        "Instead, interpret the situation and give specific advice based on numbers and behavior.\n"
     )
+
     result = await _chat_text(
         system_prompt="You are a careful health assistant. Stay grounded in the provided facts and keep the message simple.",
         user_prompt=user_prompt,
         max_tokens=220,
     )
+
     return result.strip() if result else None
 
 
 async def _chat_json(*, system_prompt: str, user_prompt: str, max_tokens: int) -> dict | None:
-    content = await _chat_text(system_prompt=system_prompt, user_prompt=user_prompt, max_tokens=max_tokens)
+    content = await _chat_text(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        max_tokens=max_tokens,
+    )
+
     if not content:
         return None
+
     try:
         return json.loads(content)
     except json.JSONDecodeError:
@@ -73,6 +133,7 @@ async def _chat_text(*, system_prompt: str, user_prompt: str, max_tokens: int) -
         "Authorization": f"Bearer {settings.nvidia_api_key}",
         "Content-Type": "application/json",
     }
+
     payload = {
         "model": settings.nvidia_model,
         "messages": [
@@ -90,8 +151,12 @@ async def _chat_text(*, system_prompt: str, user_prompt: str, max_tokens: int) -
                 headers=headers,
                 json=payload,
             )
+
             response.raise_for_status()
             data = response.json()
+
             return data["choices"][0]["message"]["content"]
-    except Exception:
+
+    except Exception as e:
+        print("LLM ERROR:", str(e))  # keep this only
         return None

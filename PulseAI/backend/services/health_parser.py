@@ -187,19 +187,34 @@ async def parse_health_input(text: str) -> ParsedHealthData:
         try:
             merged = _merge_with_normalization(llm_result)
             validated = ParsedHealthData.model_validate(merged)
-            # If LLM missed sugar or water, fill in from heuristic
-            if validated.sugar_level is None or validated.water_ml is None or not validated.symptoms:
-                heuristic = _heuristic_parse(text)
-                heuristic_data = ParsedHealthData.model_validate(heuristic)
-                if validated.sugar_level is None and heuristic_data.sugar_level is not None:
-                    validated.sugar_level = heuristic_data.sugar_level
-                if validated.morning_sugar_level is None and heuristic_data.morning_sugar_level is not None:
-                    validated.morning_sugar_level = heuristic_data.morning_sugar_level
-                if validated.water_ml is None and heuristic_data.water_ml is not None:
-                    validated.water_ml = heuristic_data.water_ml
-                if not validated.symptoms and heuristic_data.symptoms:
-                    validated.symptoms = heuristic_data.symptoms
+
+            # 🔥 ALWAYS validate against heuristic (LLM is NOT trusted fully)
+            heuristic = _heuristic_parse(text)
+            heuristic_data = ParsedHealthData.model_validate(heuristic)
+
+            # Sugar
+            if heuristic_data.sugar_level is not None:
+                validated.sugar_level = heuristic_data.sugar_level
+
+            # Morning sugar
+            if heuristic_data.morning_sugar_level is not None:
+                validated.morning_sugar_level = heuristic_data.morning_sugar_level
+
+            # Water
+            if heuristic_data.water_ml is not None:
+                validated.water_ml = heuristic_data.water_ml
+
+            # Symptoms
+            if heuristic_data.symptoms:
+                validated.symptoms = heuristic_data.symptoms
+
+            # BP (critical override)
+            if heuristic_data.bp.systolic and heuristic_data.bp.diastolic:
+                validated.bp.systolic = heuristic_data.bp.systolic
+                validated.bp.diastolic = heuristic_data.bp.diastolic
+
             return validated
+
         except Exception:
             pass
 

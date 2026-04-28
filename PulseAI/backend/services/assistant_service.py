@@ -7,14 +7,43 @@ async def build_assistant_message(
     input_text: str,
     response: AnalyzeResponse,
 ) -> str:
+    parsed = response.parsed_data
+
+    # 🔥 Build structured signals for LLM (critical for better reasoning)
+    signal_bits = []
+
+    if parsed.alcohol.alcohol_units:
+        signal_bits.append(f"Alcohol units: {parsed.alcohol.alcohol_units}")
+
+    if parsed.food.food_type:
+        signal_bits.append(f"Food type: {parsed.food.food_type}")
+
+    if parsed.food.items:
+        signal_bits.append(f"Food items: {', '.join(parsed.food.items[:3])}")
+
+    if parsed.water_ml:
+        signal_bits.append(f"Water: {parsed.water_ml} ml")
+
+    if parsed.symptoms:
+        signal_bits.append(f"Symptoms: {', '.join(parsed.symptoms)}")
+
+    # Combine original input + structured signals
+    enhanced_text = input_text
+    if signal_bits:
+        enhanced_text = (
+            f"{input_text}\n\n"
+            f"Structured signals: {' | '.join(signal_bits)}"
+        )
+
     llm_message = await try_llm_guidance(
-        text=input_text,
+        text=enhanced_text,
         risk=response.risk,
         reasons=response.reasons,
-        actions=response.actions,
+        actions=[],  # 🔥 REMOVE influence of generic actions
         knowledge=response.knowledge,
         daily_summary=response.daily_memory.summary,
     )
+
     if llm_message:
         return llm_message
 
