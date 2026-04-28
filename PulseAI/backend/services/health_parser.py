@@ -5,43 +5,170 @@ from backend.schemas.request_response import ParsedHealthData
 from backend.services.llm_service import try_llm_parse
 
 
-SPIRIT_TYPES = ["whiskey", "whisky", "vodka", "rum", "gin", "brandy", "spirit"]
-BEER_TYPES = ["beer", "lager", "ale", "stout"]
-WINE_TYPES = ["wine"]
-SALTY_FOODS = ["chips", "namkeen", "fries", "salted peanuts", "pickle", "snacks", "papad", "bhujia"]
-JUNK_FOODS = ["chips", "pizza", "burger", "fries", "namkeen", "samosa", "pakora"]
-CARB_FOODS = ["rice", "bread", "roti", "naan", "sweets", "dessert", "cake", "ice cream"]
-SYMPTOMS = [
-    "chest pain",
-    "chest discomfort",
-    "shortness of breath",
-    "breathless",
-    "faint",
-    "confused",
-    "dizzy",
-    "weak",
-    "headache",
-    "sweating",
-    "nausea",
-    "shaky",
-    "blurred",
+SPIRIT_TYPES = [
+    "whiskey", "whisky", "scotch", "bourbon", "rye",
+    "vodka",
+    "rum", "white rum", "dark rum", "spiced rum",
+    "gin",
+    "brandy", "cognac", "armagnac",
+    "tequila", "mezcal",
+    "absinthe",
+    "liqueur", "cordial",
+    "triple sec", "vermouth",
+    "moonshine",
+    "spirit", "hard liquor", "liquor",
 ]
-NORMAL_FEELING_PHRASES = ["feeling normal", "i am feeling normal", "i feel normal"]
-NORMAL_FEELING_STANDALONE = ["normal", "fine", "okay", "ok"]
+
+BEER_TYPES = [
+    "beer", "lager", "ale",
+    "pale ale", "ipa", "india pale ale",
+    "stout", "porter",
+    "pilsner", "wheat beer",
+    "craft beer",
+    "draught beer", "draft beer",
+    "cider", "hard cider",
+]
+
+WINE_TYPES = [
+    "wine",
+    "red wine", "white wine",
+    "rose", "rosé",
+    "sparkling wine",
+    "champagne", "prosecco",
+    "dessert wine",
+    "fortified wine",
+    "port wine", "sherry",
+]
+
+SALTY_FOODS = [
+    "chips", "crisps",
+    "namkeen", "mixture", "bhujia",
+    "sev", "gathiya", "chakli", "murukku",
+    "fries", "french fries", "wedges",
+    "salted peanuts", "roasted peanuts", "masala peanuts",
+    "salted cashews", "salted almonds",
+    "pickle", "achar",
+    "papad", "papadam",
+    "snacks", "savory snacks",
+    "popcorn", "salted popcorn",
+    "nachos",
+    "pretzels",
+    "crackers",
+    "salty biscuits",
+]
+
+JUNK_FOODS = [
+    "chips", "pizza", "burger", "fries",
+    "namkeen", "samosa", "pakora", "kachori",
+    "chowmein", "noodles", "fried noodles",
+    "fried rice",
+    "roll", "frankie",
+    "shawarma", "wrap",
+    "hot dog", "sandwich",
+    "pasta", "mac and cheese",
+    "donut", "doughnut",
+    "cake", "pastry", "cupcake",
+    "ice cream", "milkshake",
+    "chocolate", "candy", "toffee",
+    "soft drink", "soda", "cola",
+    "fast food", "junk food",
+]
+
+CARB_FOODS = [
+    "rice", "white rice", "brown rice", "fried rice",
+    "bread", "white bread", "brown bread",
+    "roti", "chapati", "phulka",
+    "naan", "butter naan", "kulcha",
+    "paratha", "aloo paratha",
+    "poori", "bhatura",
+    "pasta", "noodles",
+    "oats", "porridge",
+    "cereal", "cornflakes",
+    "potato", "aloo",
+    "sweet potato",
+    "sweets", "dessert", "mithai",
+    "cake", "pastry",
+    "ice cream",
+    "halwa", "laddu", "ladoo", "barfi", "jalebi",
+    "cookies", "biscuits",
+]
+
+SYMPTOMS = [
+    # Cardio / Respiratory
+    "chest pain", "chest discomfort", "tight chest", "chest tightness",
+    "shortness of breath", "breathless", "difficulty breathing",
+    "rapid breathing", "slow breathing",
+
+    # Neurological
+    "dizzy", "dizziness", "lightheaded", "lightheadedness",
+    "faint", "fainting",
+    "confused", "confusion", "disoriented",
+    "headache", "migraine",
+    "blurred vision", "vision problems", "double vision", "blurred",
+    "numbness", "tingling",
+
+    # Weakness / Energy
+    "weak", "weakness",
+    "fatigue", "tired", "exhausted",
+    "low energy", "lethargic",
+
+    # Cardiac
+    "palpitations", "irregular heartbeat",
+    "racing heart", "rapid heart rate",
+    "slow heart rate",
+
+    # Gastrointestinal
+    "nausea", "vomiting", "vomit",
+    "stomach pain", "abdominal pain",
+    "bloating", "indigestion", "acidity",
+
+    # Temperature / Sweat
+    "sweating", "sweaty", "clammy",
+    "cold sweat",
+    "hot", "hot flashes",
+    "fever", "chills",
+
+    # Metabolic / Blood Sugar
+    "shaky", "trembling", "tremor",
+    "hungry", "excess hunger",
+    "thirsty", "excess thirst",
+    "dry mouth",
+
+    # Mental / Emotional
+    "anxious", "anxiety",
+    "restless", "uneasy",
+    "irritable", "moody",
+    "panic", "panic attack",
+
+    # General Descriptors
+    "heavy", "pressure",
+    "uncomfortable", "not right",
+    "off", "weird feeling",
+
+    # Severe / Emergency
+    "loss of consciousness",
+    "seizure",
+    "collapse",
+]
+
+NORMAL_FEELING_PHRASES = [
+    "feeling normal", "i am feeling normal", "i feel normal",
+    "feeling fine", "i am feeling fine", "feeling okay", "feeling ok",
+    "feeling good", "i am fine", "i am okay", "all good", "all ok",
+]
+NORMAL_FEELING_STANDALONE = ["normal", "fine", "okay", "ok", "good", "alright"]
+
 NUMBER_WORDS = {
-    "a": 1,
-    "an": 1,
-    "one": 1,
-    "two": 2,
-    "three": 3,
-    "four": 4,
-    "five": 5,
-    "six": 6,
-    "seven": 7,
-    "eight": 8,
-    "nine": 9,
-    "ten": 10,
-    "half": 0.5,
+    "a": 1, "an": 1, "one": 1, "two": 2, "three": 3,
+    "four": 4, "five": 5, "six": 6, "seven": 7,
+    "eight": 8, "nine": 9, "ten": 10, "half": 0.5,
+}
+
+SECTION_KEYS = {
+    "food": "food", "drinks": "drinks", "drink": "drinks",
+    "bp": "bp", "blood pressure": "bp",
+    "sugar": "sugar", "glucose": "sugar",
+    "water": "water", "feeling": "feeling", "symptoms": "feeling",
 }
 
 
@@ -59,7 +186,20 @@ async def parse_health_input(text: str) -> ParsedHealthData:
     if llm_result:
         try:
             merged = _merge_with_normalization(llm_result)
-            return ParsedHealthData.model_validate(merged)
+            validated = ParsedHealthData.model_validate(merged)
+            # If LLM missed sugar or water, fill in from heuristic
+            if validated.sugar_level is None or validated.water_ml is None or not validated.symptoms:
+                heuristic = _heuristic_parse(text)
+                heuristic_data = ParsedHealthData.model_validate(heuristic)
+                if validated.sugar_level is None and heuristic_data.sugar_level is not None:
+                    validated.sugar_level = heuristic_data.sugar_level
+                if validated.morning_sugar_level is None and heuristic_data.morning_sugar_level is not None:
+                    validated.morning_sugar_level = heuristic_data.morning_sugar_level
+                if validated.water_ml is None and heuristic_data.water_ml is not None:
+                    validated.water_ml = heuristic_data.water_ml
+                if not validated.symptoms and heuristic_data.symptoms:
+                    validated.symptoms = heuristic_data.symptoms
+            return validated
         except Exception:
             pass
 
@@ -99,15 +239,32 @@ def _merge_with_normalization(raw: dict) -> dict:
 
 def _heuristic_parse(text: str) -> dict:
     lowered = text.lower()
-    systolic, diastolic = _parse_bp(lowered)
-    morning_sugar = _parse_morning_sugar(lowered)
-    sugar = _parse_current_sugar(lowered, morning_sugar)
-    water_ml = _parse_water(lowered)
+    sections = _extract_sections(text)
 
-    drink_type = _parse_drink_type(lowered)
-    quantity = _parse_drink_quantity(lowered, drink_type)
-    size_label = _parse_size_label(lowered)
-    volume_ml_each = _parse_volume_ml(lowered)
+    sugar_text = sections.get("sugar", lowered)
+    water_text = sections.get("water", lowered)
+    bp_text = sections.get("bp", lowered)
+    feeling_text = sections.get("feeling", lowered)
+    food_text = sections.get("food", lowered)
+    drinks_text = sections.get("drinks", lowered)
+
+    systolic, diastolic = _parse_bp(bp_text)
+    if systolic is None:
+        systolic, diastolic = _parse_bp(lowered)
+
+    morning_sugar = _parse_morning_sugar(lowered)
+    sugar = _parse_current_sugar(sugar_text, morning_sugar)
+    if sugar is None:
+        sugar = _parse_current_sugar(lowered, morning_sugar)
+
+    water_ml = _parse_water(water_text)
+    if water_ml is None:
+        water_ml = _parse_water(lowered)
+
+    drink_type = _parse_drink_type(drinks_text or lowered)
+    quantity = _parse_drink_quantity(drinks_text or lowered, drink_type)
+    size_label = _parse_size_label(drinks_text or lowered)
+    volume_ml_each = _parse_volume_ml(drinks_text or lowered)
     total_volume_ml = None
     if volume_ml_each is not None and quantity is not None:
         total_volume_ml = volume_ml_each * quantity
@@ -120,10 +277,10 @@ def _heuristic_parse(text: str) -> dict:
         total_volume_ml=total_volume_ml,
     )
 
-    food_items = [food for food in SALTY_FOODS + JUNK_FOODS + CARB_FOODS if food in lowered]
-    food_type = _derive_food_type(lowered)
-    salt_level = _derive_salt_level(lowered, food_items)
-    symptoms = _parse_symptoms(lowered)
+    food_items = [food for food in SALTY_FOODS + JUNK_FOODS + CARB_FOODS if food in (food_text or lowered)]
+    food_type = _derive_food_type(food_text or lowered)
+    salt_level = _derive_salt_level(food_text or lowered, food_items)
+    symptoms = _parse_symptoms(feeling_text or lowered)
 
     return {
         "bp": {"systolic": systolic, "diastolic": diastolic},
@@ -147,6 +304,19 @@ def _heuristic_parse(text: str) -> dict:
         "symptoms": list(dict.fromkeys(symptoms)),
         "notes": text.strip(),
     }
+
+
+def _extract_sections(text: str) -> dict[str, str]:
+    sections: dict[str, str] = {}
+    for part in text.split("|"):
+        piece = part.strip()
+        if ":" not in piece:
+            continue
+        label, value = piece.split(":", 1)
+        normalized = SECTION_KEYS.get(label.strip().lower())
+        if normalized and value.strip():
+            sections[normalized] = value.strip().lower()
+    return sections
 
 
 def normalize_alcohol(*, drink_type: str | None, quantity: float | None, size_label: str | None, volume_ml_each: float | None, total_volume_ml: float | None) -> DrinkConversion:
@@ -219,13 +389,21 @@ def _parse_water(text: str) -> int | None:
     if reverse_glass_match:
         return int(float(reverse_glass_match.group(1)) * 250)
 
-    if "liter of water" in text or "litre of water" in text or "water" in text:
-        liter_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\s*(?:of\s+)?water\b", text)
-        if liter_match:
-            return int(float(liter_match.group(1)) * 1000)
-        reverse_liter_match = re.search(r"water[^\d]*(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\b", text)
-        if reverse_liter_match:
-            return int(float(reverse_liter_match.group(1)) * 1000)
+    bare_glass = re.search(r"(\d+(?:\.\d+)?)\s*(glass|glasses)\b", text)
+    if bare_glass:
+        return int(float(bare_glass.group(1)) * 250)
+
+    liter_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\s*(?:of\s+)?water\b", text)
+    if liter_match:
+        return int(float(liter_match.group(1)) * 1000)
+
+    reverse_liter_match = re.search(r"water[^\d]*(\d+(?:\.\d+)?)\s*(?:liter|litre|l)\b", text)
+    if reverse_liter_match:
+        return int(float(reverse_liter_match.group(1)) * 1000)
+
+    bare_ml = re.search(r"(\d{2,4})\s*ml\b", text)
+    if bare_ml:
+        return int(bare_ml.group(1))
 
     return None
 
@@ -235,6 +413,7 @@ def _parse_morning_sugar(text: str) -> int | None:
         r"morning sugar[^\d]*(\d{2,3})",
         r"sugar in the morning[^\d]*(\d{2,3})",
         r"fasting sugar[^\d]*(\d{2,3})",
+        r"fasting[^\d]*(\d{2,3})",
     ]
     for pattern in patterns:
         match = re.search(pattern, text)
@@ -249,7 +428,17 @@ def _parse_current_sugar(text: str, morning_sugar: int | None) -> int | None:
         generic = _extract_number_after_keywords(lowered, ["sugar", "glucose"])
         if generic == morning_sugar:
             return None
-    return _extract_number_after_keywords(lowered, ["sugar", "glucose"])
+
+    result = _extract_number_after_keywords(lowered, ["sugar", "glucose"])
+    if result is not None:
+        return result
+
+    # bare number (section-split e.g. "144")
+    bare = re.search(r"^\s*(\d{2,3})\s*$", lowered)
+    if bare:
+        return int(bare.group(1))
+
+    return None
 
 
 def _parse_drink_type(text: str) -> str | None:
@@ -315,6 +504,10 @@ def _parse_symptoms(text: str) -> list[str]:
     if any(phrase in text for phrase in NORMAL_FEELING_PHRASES):
         return ["normal"]
 
+    normalized = text.strip().lower()
+    if normalized in NORMAL_FEELING_STANDALONE:
+        return ["normal"]
+
     segments = [segment.strip() for segment in text.split(",")]
     if any(segment in NORMAL_FEELING_STANDALONE for segment in segments):
         return ["normal"]
@@ -348,7 +541,7 @@ def _derive_food_type(text: str) -> str | None:
         return "junk"
     if any(food in text for food in CARB_FOODS):
         return "carb-heavy"
-    if any(food in text for food in ["salad", "dal", "vegetable", "balanced"]):
+    if any(food in text for food in ["salad", "dal", "vegetable", "sabzi", "balanced", "fruit", "fruits"]):
         return "balanced"
     return None
 

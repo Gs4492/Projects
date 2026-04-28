@@ -25,8 +25,8 @@ def build_follow_up_questions(parsed: ParsedHealthData, memory: DailyMemory | No
     if parsed.alcohol.alcohol_units > 0 and not parsed.food.items:
         questions.append("Did you eat anything with the drink, especially salty snacks or fried food?")
 
-    if (parsed.alcohol.alcohol_units > 0 or elevated_bp or sugar_concern) and not has_symptoms:
-        questions.append("How are you feeling right now? You can say normal, fine, okay, or mention symptoms like dizzy, weak, chest discomfort, or sweating.")
+    if not parsed.symptoms:
+        questions.append("How are you feeling right now? You can say normal, fine, okay, or mention symptoms like dizzy, weak, tired, or chest discomfort.")
 
     if parsed.food.food_type == "carb-heavy" and parsed.sugar_level is None and morning_sugar is None:
         questions.append("Do you know your current sugar or morning sugar after eating these carbs?")
