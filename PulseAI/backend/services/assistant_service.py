@@ -6,6 +6,7 @@ async def build_assistant_message(
     *,
     input_text: str,
     response: AnalyzeResponse,
+    weekly_trends: str = "",
 ) -> str:
     parsed = response.parsed_data
 
@@ -35,13 +36,17 @@ async def build_assistant_message(
             f"Structured signals: {' | '.join(signal_bits)}"
         )
 
+    daily_context = response.daily_memory.summary
+    if weekly_trends:
+        daily_context = f"{daily_context} {weekly_trends}"
+
     llm_message = await try_llm_guidance(
         text=enhanced_text,
         risk=response.risk,
         reasons=response.reasons,
-        actions=[],  # 🔥 REMOVE influence of generic actions
+        actions=[],
         knowledge=response.knowledge,
-        daily_summary=response.daily_memory.summary,
+        daily_summary=daily_context,
     )
 
     if llm_message:

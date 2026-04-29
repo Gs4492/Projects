@@ -123,3 +123,55 @@ def _build_summary(
     if high_risk_entries_today > 0:
         bits.append(f"{high_risk_entries_today} high-risk warning already today")
     return "Today so far: " + ", ".join(bits) + "."
+
+
+def get_weekly_trends(db: Session) -> str:
+    seven_days_ago = datetime.now() - timedelta(days=7)
+    logs = (
+        db.query(HealthLog)
+        .filter(HealthLog.created_at >= seven_days_ago)
+        .order_by(HealthLog.created_at.asc())
+        .all()
+    )
+
+    if not logs:
+        return ""
+
+    bits: list[str] = []
+
+    # BP trend
+    bp_high_days = set()
+    for log in logs:
+        if log.bp_systolic and log.bp_systolic >= 135:
+            bp_high_days.add(log.created_at.date())
+    if len(bp_high_days) >= 3:
+        bits.append(f"BP has been above 135 on {len(bp_high_days)} of the last 7 days.")
+
+    # Alcohol trend
+    alcohol_days = set()
+    for log in logs:
+        if log.alcohol_units and log.alcohol_units > 0:
+            alcohol_days.add(log.created_at.date())
+    if len(alcohol_days) >= 3:
+        bits.append(f"Alcohol logged on {len(alcohol_days)} out of the last 7 days.")
+
+    # Sugar trend
+    high_sugar_days = set()
+    for log in logs:
+        if log.sugar_level and log.sugar_level >= 140:
+            high_sugar_days.add(log.created_at.date())
+    if len(high_sugar_days) >= 3:
+        bits.append(f"Sugar has been above 140 on {len(high_sugar_days)} of the last 7 days.")
+
+    # Risk trend
+    high_risk_days = set()
+    for log in logs:
+        if log.risk_level == "HIGH":
+            high_risk_days.add(log.created_at.date())
+    if len(high_risk_days) >= 2:
+        bits.append(f"HIGH risk flagged on {len(high_risk_days)} days this week.")
+
+    if not bits:
+        return ""
+
+    return "7-day pattern: " + " ".join(bits)
