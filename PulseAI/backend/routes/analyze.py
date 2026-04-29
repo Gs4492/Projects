@@ -22,7 +22,17 @@ async def analyze_health(request: AnalyzeRequest, db: Session = Depends(get_db))
     enriched = merge_with_daily_memory(parsed, daily_memory)
     follow_up_questions = build_follow_up_questions(enriched, daily_memory)
 
-    if follow_up_questions:
+    has_core_readings = any([
+        enriched.bp.systolic is not None and enriched.bp.diastolic is not None,
+        enriched.sugar_level is not None,
+        enriched.morning_sugar_level is not None,
+        enriched.alcohol.alcohol_units > 0,
+        bool(enriched.food.items),
+        enriched.water_ml is not None,
+        bool(enriched.symptoms),
+    ])
+
+    if follow_up_questions and not has_core_readings:
         response = build_incomplete_response(enriched, follow_up_questions, daily_memory)
         response.guidance = build_guidance_sections(response)
         return response
