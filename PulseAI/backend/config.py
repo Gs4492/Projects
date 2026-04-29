@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     nvidia_api_key: str | None = None
     nvidia_model: str = "meta/llama-3.1-8b-instruct"
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
-    request_timeout_seconds: int = 20
+    request_timeout_seconds: int = 40
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",

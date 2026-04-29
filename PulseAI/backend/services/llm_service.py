@@ -62,6 +62,35 @@ async def try_llm_guidance(
         print("LLM SKIPPED: No API key")
         return None
 
+
+    system_prompt = (
+        "You are a careful health assistant.\n\n"
+
+        "STRICT RULES (must follow):\n"
+        "- NEVER diagnose diseases\n"
+        "- NEVER say 'diabetes', 'hypertension', or any condition from a single reading\n"
+        "- NEVER exaggerate risk\n"
+
+        "SUGAR INTERPRETATION RULES:\n"
+        "- Fasting sugar >=126 → high\n"
+        "- Post-meal sugar <140 → acceptable\n"
+        "- Post-meal sugar 140–180 → slightly high\n"
+        "- Only describe what is happening, DO NOT label disease\n"
+
+        "BP INTERPRETATION RULES:\n"
+        "- 120–129 → slightly above normal\n"
+        "- 130–139 → elevated\n"
+        "- >=140 → high\n"
+        "- Do NOT panic unless very high\n"
+
+        "GENERAL:\n"
+        "- You MUST strictly follow the provided risk level, reasons, and context\n"
+        "- DO NOT contradict or override the given reasoning\n"
+        "- DO NOT add new medical conclusions beyond the provided information\n"
+        "- Prefer calm, practical advice\n"
+        "- Keep it under 110 words\n"
+    )
+
     user_prompt = (
         "You are a practical health assistant.\n\n"
 
@@ -93,11 +122,11 @@ async def try_llm_guidance(
 
         "Your task:\n"
         "Do NOT repeat the recommendations blindly.\n"
-        "Instead, interpret the situation and give specific advice based on numbers and behavior.\n"
+        "Use the provided observations and context to explain the situation. Do NOT reinterpret beyond them.\n"
     )
 
     result = await _chat_text(
-        system_prompt="You are a careful health assistant. Stay grounded in the provided facts and keep the message simple.",
+        system_prompt=system_prompt,
         user_prompt=user_prompt,
         max_tokens=220,
     )
@@ -145,7 +174,9 @@ async def _chat_text(*, system_prompt: str, user_prompt: str, max_tokens: int) -
     }
 
     try:
-        async with httpx.AsyncClient(timeout=settings.request_timeout_seconds) as client:
+        timeout = httpx.Timeout(40.0, connect=10.0)
+
+        async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 f"{settings.nvidia_base_url}/chat/completions",
                 headers=headers,
@@ -158,5 +189,7 @@ async def _chat_text(*, system_prompt: str, user_prompt: str, max_tokens: int) -
             return data["choices"][0]["message"]["content"]
 
     except Exception as e:
-        print("LLM ERROR:", str(e))  # keep this only
+        import traceback
+        print("LLM ERROR FULL:")
+        traceback.print_exc()
         return None

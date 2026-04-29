@@ -1,5 +1,6 @@
 from backend.schemas.request_response import AnalyzeResponse, GuidanceSections
 from backend.services.llm_service import try_llm_guidance
+import asyncio
 
 
 async def build_assistant_message(
@@ -40,19 +41,49 @@ async def build_assistant_message(
     if weekly_trends:
         daily_context = f"{daily_context} {weekly_trends}"
 
-    llm_message = await try_llm_guidance(
-        text=enhanced_text,
-        risk=response.risk,
-        reasons=response.reasons,
-        actions=[],
-        knowledge=response.knowledge,
-        daily_summary=daily_context,
+    
+
+    try:
+        llm_message = await asyncio.wait_for(
+            try_llm_guidance(
+                text=enhanced_text,
+                risk=response.risk,
+                reasons=response.reasons,
+                actions=[],
+                knowledge=response.knowledge,
+                daily_summary=daily_context,
+            ),
+            timeout=8.0,
+        )
+
+        if llm_message:
+            return llm_message
+
+    except asyncio.TimeoutError:
+        print("LLM TIMEOUT — using fallback")
+        return _fallback_message(response)
+
+    except Exception as e:
+        print("LLM FAILED:", str(e))
+
+        return _fallback_message(response)
+
+def _is_fasting_context(parsed, raw_text: str) -> bool:
+    text = (raw_text or "").lower()
+    return (
+        parsed.morning_sugar_level is not None
+        or any(word in text for word in ["fasting", "empty stomach", "before breakfast", "morning sugar"])
     )
 
-    if llm_message:
-        return llm_message
 
-    return _fallback_message(response)
+def _is_post_meal_context(raw_text: str) -> bool:
+    text = (raw_text or "").lower()
+    return any(phrase in text for phrase in [
+        "after meal",
+        "after lunch",
+        "after dinner",
+        "after eating"
+    ])
 
 
 def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
@@ -89,18 +120,41 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
             what_bits.append(f"BP {bp.systolic}/{bp.diastolic} — normal range.")
 
     if sugar is not None:
-        if sugar < 70:
-            what_bits.append(f"Sugar {sugar} — dangerously low. Act immediately.")
-        elif sugar >= 250:
-            what_bits.append(f"Sugar {sugar} — very high. Risk of complications.")
-        elif sugar >= 180:
-            what_bits.append(f"Sugar {sugar} — high. Avoid carbs and sweets.")
-        elif sugar >= 126:
-            what_bits.append(f"Sugar {sugar} — above normal. May indicate diabetes if consistent.")
-        elif sugar >= 100:
-            what_bits.append(f"Sugar {sugar} — prediabetic range. Monitor closely.")
+        raw_text = parsed.notes or ""
+        is_fasting = _is_fasting_context(parsed, raw_text)
+        is_post_meal = _is_post_meal_context(raw_text)
+
+        context_label = ""
+        if is_fasting:
+            context_label = " (fasting)"
+        elif is_post_meal:
+            context_label = " (post-meal)"
         else:
-            what_bits.append(f"Sugar {sugar} — normal range.")
+            context_label = " (timing unclear)"
+
+        if sugar < 70:
+            what_bits.append(f"Sugar {sugar}{context_label} — dangerously low. Act immediately.")
+        elif sugar >= 250:
+            what_bits.append(f"Sugar {sugar}{context_label} — very high. Risk of complications.")
+        elif sugar >= 180:
+            what_bits.append(f"Sugar {sugar}{context_label} — high. Avoid carbs and sweets.")
+        elif sugar >= 126:
+            if is_fasting:
+                what_bits.append(f"Sugar {sugar}{context_label} — high fasting level. Needs attention.")
+            elif is_post_meal:
+                if sugar < 140:
+                    what_bits.append(f"Sugar {sugar}{context_label} — acceptable after a meal.")
+                else:
+                    what_bits.append(f"Sugar {sugar}{context_label} — above ideal post-meal range.")
+            else:
+                what_bits.append(f"Sugar {sugar}{context_label} — slightly elevated. Monitor.")
+        elif sugar >= 100:
+            if is_fasting:
+                what_bits.append(f"Sugar {sugar}{context_label} — prediabetic fasting range.")
+            else:
+                what_bits.append(f"Sugar {sugar}{context_label} — slightly elevated for post-meal.")
+        else:
+            what_bits.append(f"Sugar {sugar}{context_label} — normal range.")
     elif morning_sugar is not None:
         if morning_sugar >= 180:
             what_bits.append(f"Morning sugar {morning_sugar} — already high at the start of the day.")
