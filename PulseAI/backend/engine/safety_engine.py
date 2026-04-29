@@ -1,4 +1,5 @@
 from backend.schemas.request_response import AnalyzeResponse, DailyMemory, ParsedHealthData
+from datetime import datetime
 
 
 SEVERE_SYMPTOMS = {"chest pain", "chest discomfort", "shortness of breath", "breathless", "faint", "confused"}
@@ -27,6 +28,12 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
     total_alcohol_today = round((daily_memory.alcohol_units_today or 0) + alcohol_units, 1)
     elevated_bp = (systolic is not None and systolic >= 140) or (diastolic is not None and diastolic >= 90)
 
+    # Time of day context
+    current_hour = datetime.now().hour
+    is_morning = current_hour < 11
+    is_evening = current_hour >= 18
+    is_night = current_hour >= 22
+
     if systolic and diastolic:
         if systolic >= 180 or diastolic >= 110:
             risk_score += 6
@@ -49,6 +56,11 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
             reasons.append(f"BP {systolic}/{diastolic} — slightly above normal. Keep salt and alcohol low.")
         else:
             reasons.append(f"BP {systolic}/{diastolic} — normal range. Good.")
+
+    # Time-aware BP context
+    if systolic and diastolic and is_night and elevated_bp:
+        risk_score += 1
+        reasons.append("Elevated BP at night is more concerning. Avoid stimulants and rest now.")
 
     if morning_sugar is not None:
         if morning_sugar >= 180:
@@ -88,7 +100,13 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
         else:
             risk_score += 2
             reasons.append(f"Sugar {sugar} is on the lower side. Make sure to eat regular meals and monitor for symptoms of low sugar.")
-            
+
+    # Time-aware sugar context
+    if sugar is not None and is_morning and sugar >= 126:
+        risk_score += 1
+        reasons.append(f"Sugar {sugar} in the morning is likely a fasting reading. Fasting sugar above 126 needs medical attention.")
+    elif sugar is not None and not is_morning and sugar >= 140:
+        reasons.append(f"Sugar {sugar} after a meal is above normal. Avoid sweets and heavy carbs for the rest of the day.")
 
     if alcohol_units >= 6:
         risk_score += 5
@@ -105,6 +123,14 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
     elif alcohol_units > 0:
         risk_score += 1
         reasons.append(f"Alcohol intake is low at about {alcohol_units:.1f} unit.")
+
+    # Time-aware alcohol context
+    if alcohol_units > 0 and is_night:
+        risk_score += 1
+        reasons.append("Alcohol at night raises overnight BP risk and disrupts sleep. Try to stop now.")
+    elif alcohol_units > 0 and is_evening:
+        risk_score += 1
+        reasons.append("Evening alcohol with elevated BP or sugar needs extra caution tonight.")
 
     if elevated_bp and alcohol_units > 0:
         risk_score += 1
