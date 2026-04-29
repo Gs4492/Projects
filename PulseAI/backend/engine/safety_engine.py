@@ -30,20 +30,25 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
     if systolic and diastolic:
         if systolic >= 180 or diastolic >= 110:
             risk_score += 6
-            reasons.append(f"Blood pressure is dangerously high at {systolic}/{diastolic}.")
+            reasons.append(f"BP {systolic}/{diastolic} — hypertensive crisis level. This is a medical emergency.")
             actions.append("Stop alcohol immediately and get urgent medical help if symptoms are present.")
             actions.append("Sit down quietly and recheck blood pressure within 15 minutes.")
         elif systolic >= 160 or diastolic >= 100:
             risk_score += 5
-            reasons.append(f"Blood pressure is very high at {systolic}/{diastolic}.")
+            reasons.append(f"BP {systolic}/{diastolic} — very high (Stage 2 hypertension). Needs attention today.")
             actions.append("Do not drink more alcohol today.")
             actions.append("Recheck blood pressure within 30 to 60 minutes.")
         elif systolic >= 140 or diastolic >= 90:
             risk_score += 3
-            reasons.append(f"Blood pressure is elevated at {systolic}/{diastolic}.")
+            reasons.append(f"BP {systolic}/{diastolic} — Stage 1 hypertension. Salt, alcohol, and stress can push this higher.")
             actions.append(_bp_elevated_action(alcohol_units))
+        elif systolic >= 130 or diastolic >= 80:
+            risk_score += 1
+            reasons.append(f"BP {systolic}/{diastolic} — elevated. Not yet hypertension but worth watching.")
+        elif systolic >= 120:
+            reasons.append(f"BP {systolic}/{diastolic} — slightly above normal. Keep salt and alcohol low.")
         else:
-            reasons.append(f"Blood pressure is currently in a lower-risk range at {systolic}/{diastolic}.")
+            reasons.append(f"BP {systolic}/{diastolic} — normal range. Good.")
 
     if morning_sugar is not None:
         if morning_sugar >= 180:
@@ -59,19 +64,31 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
     if sugar is not None:
         if sugar < 70:
             risk_score += 5
-            reasons.append(f"Blood sugar is low at {sugar}.")
+            reasons.append(f"Sugar {sugar} — dangerously low (hypoglycemia). Act immediately.")
             actions.append("Take a fast sugar source now and recheck sugar in 15 minutes.")
             actions.append("Take a small snack after that so the sugar does not drop again.")
         elif sugar >= 250:
             risk_score += 4
-            reasons.append(f"Blood sugar is very high at {sugar}.")
+            reasons.append(f"Sugar {sugar} — very high. Risk of diabetic complications if not managed.")
             actions.append("Avoid sweets and heavy carbs, drink water, and monitor sugar closely.")
         elif sugar >= 180:
             risk_score += 3
-            reasons.append(f"Blood sugar is high at {sugar}.")
+            reasons.append(f"Sugar {sugar} — high. Keep the next meal light and avoid sweets or extra carbs.")
             actions.append("Keep the next meal light and avoid sweets or extra carbs.")
-        elif sugar <= 140:
-            reasons.append(f"Blood sugar is currently more controlled at {sugar}.")
+        elif sugar >= 126:
+            risk_score += 2
+            reasons.append(f"Sugar {sugar} — above normal. This range may indicate diabetes if consistent.")
+            actions.append("Avoid sweets and heavy carbs for the rest of the day.")
+        elif sugar >= 100:
+            risk_score += 1
+            reasons.append(f"Sugar {sugar} — prediabetic range. Worth monitoring, especially after carb-heavy meals.")
+        elif sugar >= 70:
+            reasons.append(f"Sugar {sugar} — normal range. Good.")
+            actions.append("Continue with your normal routine and keep monitoring.")
+        else:
+            risk_score += 2
+            reasons.append(f"Sugar {sugar} is on the lower side. Make sure to eat regular meals and monitor for symptoms of low sugar.")
+            
 
     if alcohol_units >= 6:
         risk_score += 5
