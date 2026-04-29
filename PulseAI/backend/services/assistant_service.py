@@ -235,7 +235,17 @@ def _fallback_message(response: AnalyzeResponse) -> str:
 
 def _dedupe(items: list[str]) -> list[str]:
     picked: list[str] = []
+    picked_lower: list[str] = []
     for item in items:
-        if item and item not in picked:
-            picked.append(item)
+        if not item:
+            continue
+        item_lower = item.lower().strip()
+        # Skip if exact match or if key phrase already covered
+        if item_lower in picked_lower:
+            continue
+        # Skip if a very similar item already exists (first 40 chars match)
+        if any(item_lower[:40] in existing or existing[:40] in item_lower for existing in picked_lower):
+            continue
+        picked.append(item)
+        picked_lower.append(item_lower)
     return picked
