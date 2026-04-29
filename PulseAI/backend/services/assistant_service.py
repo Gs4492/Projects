@@ -130,7 +130,16 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
         elif is_post_meal:
             context_label = " (post-meal)"
         else:
-            context_label = " (timing unclear)"
+            from datetime import datetime
+            hour = datetime.now().hour
+            if hour < 11:
+                context_label = " (fasting)"
+            elif hour < 15:
+                context_label = " (after breakfast)"
+            elif hour < 20:
+                context_label = " (after meal)"
+            else:
+                context_label = " (evening reading)"
 
         if sugar < 70:
             what_bits.append(f"Sugar {sugar}{context_label} — dangerously low. Act immediately.")

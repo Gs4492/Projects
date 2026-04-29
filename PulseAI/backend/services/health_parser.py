@@ -110,7 +110,9 @@ SYMPTOMS = [
     # Weakness / Energy
     "weak", "weakness",
     "fatigue", "tired", "exhausted",
-    "low energy", "lethargic",
+    "low energy", "lethargic", "sluggish",
+    "heavy", "heavy limbs","sleepy", "drowsy",
+    "difficulty concentrating", "brain fog",
 
     # Cardiac
     "palpitations", "irregular heartbeat",
