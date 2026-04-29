@@ -70,27 +70,43 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
 
     what_bits: list[str] = []
     if bp.systolic and bp.diastolic:
-        if bp.systolic >= 160 or bp.diastolic >= 100:
-            what_bits.append(f"Blood pressure is in a clearly high range at {bp.systolic}/{bp.diastolic}.")
+        if bp.systolic >= 180 or bp.diastolic >= 110:
+            what_bits.append(f"BP {bp.systolic}/{bp.diastolic} — hypertensive crisis. Seek urgent help.")
+        elif bp.systolic >= 160 or bp.diastolic >= 100:
+            what_bits.append(f"BP {bp.systolic}/{bp.diastolic} — very high (Stage 2 hypertension).")
         elif bp.systolic >= 140 or bp.diastolic >= 90:
-            what_bits.append(f"Blood pressure is elevated at {bp.systolic}/{bp.diastolic}.")
+            what_bits.append(f"BP {bp.systolic}/{bp.diastolic} — Stage 1 hypertension. Needs attention.")
+        elif bp.systolic >= 130 or bp.diastolic >= 80:
+            what_bits.append(f"BP {bp.systolic}/{bp.diastolic} — elevated. Worth watching.")
+        elif bp.systolic >= 120:
+            what_bits.append(f"BP {bp.systolic}/{bp.diastolic} — slightly above normal.")
         else:
-            what_bits.append(f"Blood pressure is currently steadier at {bp.systolic}/{bp.diastolic}.")
+            what_bits.append(f"BP {bp.systolic}/{bp.diastolic} — normal range.")
 
     if sugar is not None:
-        if sugar >= 250:
-            what_bits.append(f"Current sugar is very high at {sugar}.")
+        if sugar < 70:
+            what_bits.append(f"Sugar {sugar} — dangerously low. Act immediately.")
+        elif sugar >= 250:
+            what_bits.append(f"Sugar {sugar} — very high. Risk of complications.")
         elif sugar >= 180:
-            what_bits.append(f"Current sugar is high at {sugar}.")
-        elif sugar < 70:
-            what_bits.append(f"Current sugar is low at {sugar}.")
+            what_bits.append(f"Sugar {sugar} — high. Avoid carbs and sweets.")
+        elif sugar >= 126:
+            what_bits.append(f"Sugar {sugar} — above normal. May indicate diabetes if consistent.")
+        elif sugar >= 100:
+            what_bits.append(f"Sugar {sugar} — prediabetic range. Monitor closely.")
         else:
-            what_bits.append(f"Current sugar is more controlled at {sugar}.")
+            what_bits.append(f"Sugar {sugar} — normal range.")
     elif morning_sugar is not None:
         if morning_sugar >= 180:
-            what_bits.append(f"Morning sugar already started high at {morning_sugar}.")
-        elif morning_sugar >= 140:
-            what_bits.append(f"Morning sugar is mildly elevated at {morning_sugar}.")
+            what_bits.append(f"Morning sugar {morning_sugar} — already high at the start of the day.")
+        elif morning_sugar >= 126:
+            what_bits.append(f"Morning sugar {morning_sugar} — above normal fasting range.")
+        elif morning_sugar >= 100:
+            what_bits.append(f"Morning sugar {morning_sugar} — prediabetic fasting range.")
+        elif morning_sugar < 70:
+            what_bits.append(f"Morning sugar {morning_sugar} — started low. Eat something soon.")
+        else:
+            what_bits.append(f"Morning sugar {morning_sugar} — normal fasting range.")
 
     if alcohol_units > 0:
         what_bits.append(f"{drink_type} intake is about {alcohol_units:.1f} alcohol unit{'s' if alcohol_units != 1 else ''}.")
