@@ -12,7 +12,7 @@ setInterval(() => {
 
 
 export async function analyzeText(text) {
-  const response = await axios.post(`${API_URL}/analyze`, { text }, { timeout: 30000 });
+  const response = await axios.post(`${API_URL}/analyze`, { text }, { timeout: 60000 });
   return response.data;
 }
 
