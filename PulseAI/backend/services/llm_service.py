@@ -174,7 +174,7 @@ async def _chat_text(*, system_prompt: str, user_prompt: str, max_tokens: int) -
     }
 
     try:
-        timeout = httpx.Timeout(40.0, connect=10.0)
+        timeout = httpx.Timeout(15.0, connect=5.0)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(

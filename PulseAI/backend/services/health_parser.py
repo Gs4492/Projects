@@ -184,7 +184,12 @@ class DrinkConversion:
 
 
 async def parse_health_input(text: str) -> ParsedHealthData:
-    llm_result = await try_llm_parse(text)
+    import asyncio
+    try:
+        llm_result = await asyncio.wait_for(try_llm_parse(text), timeout=10.0)
+    except asyncio.TimeoutError:
+        print("LLM PARSE TIMEOUT — using heuristic")
+        llm_result = None
     if llm_result:
         try:
             merged = _merge_with_normalization(llm_result)
