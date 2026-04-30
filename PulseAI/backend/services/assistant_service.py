@@ -53,7 +53,7 @@ async def build_assistant_message(
                 knowledge=response.knowledge,
                 daily_summary=daily_context,
             ),
-            timeout=8.0,
+            timeout=20.0,
         )
 
         if llm_message:

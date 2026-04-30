@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     database_url: str = "sqlite:///./pulseai.db"
     nvidia_api_key: str | None = None
-    nvidia_model: str = "meta/llama-3.1-8b-instruct"
+    nvidia_model: str = "mistralai/mistral-medium-3.5-128b"
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
     request_timeout_seconds: int = 40
 
