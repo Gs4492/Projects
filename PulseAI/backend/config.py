@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./pulseai.db"
     nvidia_api_key: str | None = None
     nvidia_model: str = "mistralai/mistral-medium-3.5-128b"
+    nvidia_guidance_model: str = "mistralai/mistral-nemotron"
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
     request_timeout_seconds: int = 40
 

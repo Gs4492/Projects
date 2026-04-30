@@ -129,6 +129,7 @@ async def try_llm_guidance(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         max_tokens=220,
+        model=settings.nvidia_guidance_model,
     )
 
     return result.strip() if result else None
@@ -157,14 +158,14 @@ async def _chat_json(*, system_prompt: str, user_prompt: str, max_tokens: int) -
         return None
 
 
-async def _chat_text(*, system_prompt: str, user_prompt: str, max_tokens: int) -> str | None:
+async def _chat_text(*, system_prompt: str, user_prompt: str, max_tokens: int, model: str | None = None) -> str | None:
     headers = {
         "Authorization": f"Bearer {settings.nvidia_api_key}",
         "Content-Type": "application/json",
     }
 
     payload = {
-        "model": settings.nvidia_model,
+        "model": model or settings.nvidia_model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},

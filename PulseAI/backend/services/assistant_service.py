@@ -281,21 +281,30 @@ def _fallback_message(response: AnalyzeResponse) -> str:
         return "I need a few quick details first so I can give specific food, drink, and recheck advice."
 
     guidance = response.guidance
-    bits = [f"{response.risk.title()} risk right now."]
+    bits = []
+
     if guidance.what_is_happening:
         bits.append(guidance.what_is_happening)
+
     if guidance.do_now:
-        bits.append(f"Do now: {guidance.do_now[0]}")
+        bits.append(guidance.do_now[0])
+
     if guidance.eat_next:
-        bits.append(f"Eat next: {guidance.eat_next[0]}")
+        bits.append(guidance.eat_next[0])
+
     if guidance.drink_now:
-        bits.append(f"Drink now: {guidance.drink_now[0]}")
+        bits.append(guidance.drink_now[0])
+
     if guidance.avoid:
-        bits.append(f"Avoid: {guidance.avoid[0]}")
+        clean = guidance.avoid[0].lower().replace("avoid ", "").strip().rstrip(".")
+        bits.append(f"Avoid {clean} for the rest of the day.")
+
     if guidance.check_again:
-        bits.append(f"Check again: {guidance.check_again[0]}")
-    if response.daily_memory.entries_today:
-        bits.append(response.daily_memory.summary)
+        bits.append(guidance.check_again[0])
+
+    if guidance.when_to_get_help and response.risk in {"HIGH", "MEDIUM"}:
+        bits.append(guidance.when_to_get_help[0])
+
     bits.append("Guidance only, not a diagnosis.")
     return " ".join(bits)
 
