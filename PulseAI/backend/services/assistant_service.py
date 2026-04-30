@@ -56,17 +56,16 @@ async def build_assistant_message(
             timeout=20.0,
         )
 
-        if llm_message:
+        if llm_message and llm_message.strip():
             return llm_message
 
     except asyncio.TimeoutError:
         print("LLM TIMEOUT — using fallback")
-        return _fallback_message(response)
 
     except Exception as e:
         print("LLM FAILED:", str(e))
 
-        return _fallback_message(response)
+    return _fallback_message(response)
 
 def _is_fasting_context(parsed, raw_text: str) -> bool:
     text = (raw_text or "").lower()
