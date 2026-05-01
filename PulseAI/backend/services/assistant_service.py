@@ -150,6 +150,8 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
         elif sugar >= 100:
             if is_fasting:
                 what_bits.append(f"Sugar {sugar}{context_label} — prediabetic fasting range.")
+            elif is_post_meal:
+                what_bits.append(f"Sugar {sugar}{context_label} — acceptable after a meal.")
             else:
                 what_bits.append(f"Sugar {sugar}{context_label} — slightly elevated for post-meal.")
         else:

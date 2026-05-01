@@ -233,6 +233,7 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
         else:
             risk_score += 2
             reasons.append(f"Symptoms were reported: {symptom_text}.")
+            actions.append("Keep the next few hours simple, rest if needed, and monitor the symptoms closely.")
             actions.append("If symptoms get worse or feel severe, seek urgent medical care.")
 
         if not elevated_bp and (sugar is None or 70 <= sugar < 180) and alcohol_units == 0:
