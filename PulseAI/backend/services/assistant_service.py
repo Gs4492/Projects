@@ -199,23 +199,31 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
         else:
             do_now.append(action)
 
+    has_high_bp = bool(bp.systolic and bp.diastolic and (bp.systolic >= 140 or bp.diastolic >= 90))
+    has_high_sugar = sugar is not None and sugar >= 180
+    has_low_sugar = sugar is not None and sugar < 70
+
     if alcohol_units > 0:
         if alcohol_units >= 2:
-            do_now.insert(0, f"Stop at this amount of {drink_type.lower()} for now and do not add another drink yet.")
+            alcohol_action = f"Stop at this amount of {drink_type.lower()} for now and do not add another drink yet."
         else:
-            do_now.insert(0, f"Keep {drink_type.lower()} limited and do not stack it with more salty snacks.")
+            alcohol_action = f"Keep {drink_type.lower()} limited and do not stack it with more salty snacks."
+        if has_high_bp or has_high_sugar:
+            do_now.append(alcohol_action)
+        else:
+            do_now.insert(0, alcohol_action)
 
-    if bp.systolic and bp.diastolic and (bp.systolic >= 140 or bp.diastolic >= 90):
+    if has_high_bp:
         do_now.insert(0, "Sit quietly, avoid more strain, and keep the rest of the day simple.")
         if not check_again:
             check_again.append("Recheck blood pressure after resting quietly for 30 to 60 minutes.")
 
-    if sugar is not None and sugar >= 180:
-        do_now.insert(0, "Keep the next few hours simple and do not add sweets or another heavy carb-heavy meal.")
+    if has_high_sugar:
+        do_now.insert(1 if has_high_bp else 0, "Keep the next few hours simple and do not add sweets or another heavy carb-heavy meal.")
         if not check_again:
             check_again.append("Recheck sugar later if you normally monitor it or if symptoms change.")
-    elif sugar is not None and sugar < 70:
-        do_now.insert(0, "Take fast sugar now and do not delay a recheck.")
+    elif has_low_sugar:
+        do_now.insert(1 if has_high_bp else 0, "Take fast sugar now and do not delay a recheck.")
 
     if alcohol_units > 0:
         target_water = min(max(int(alcohol_units * 300), 300), 1200)
@@ -243,6 +251,13 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
         else:
             avoid.insert(0, f"Do not take more {drink_type.lower()} for the rest of today.")
 
+    if has_high_bp and alcohol_units > 0:
+        when_to_get_help.insert(0, "Get help now if blood pressure stays high after rest or you feel chest discomfort, breathlessness, severe dizziness, or confusion.")
+    elif has_low_sugar:
+        when_to_get_help.insert(0, "Get help now if low sugar symptoms do not improve quickly after taking sugar, or if confusion, shaking, or faintness continues.")
+    elif has_high_sugar and symptoms and "normal" not in symptoms:
+        when_to_get_help.insert(0, "Get help now if sugar stays high and you also feel unwell, weak, confused, or start vomiting.")
+
     if symptoms and "normal" not in symptoms:
         when_to_get_help.insert(0, "Get help now if symptoms suddenly worsen, feel severe, or include chest pain, confusion, fainting, or trouble breathing.")
     elif response.risk == "HIGH":
@@ -253,6 +268,9 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
 
     if not do_now and response.actions:
         do_now = response.actions[:2]
+
+    if alcohol_units > 0 and not any("alcohol unit" in bit.lower() for bit in what_bits):
+        what_bits.append(f"Alcohol is part of this entry at about {alcohol_units:.1f} unit{'s' if alcohol_units != 1 else ''}.")
 
     what_is_happening = " ".join(_dedupe(what_bits)[:4]) if what_bits else "This entry needs attention."
 

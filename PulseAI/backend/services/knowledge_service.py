@@ -37,6 +37,11 @@ KNOWLEDGE_BASE = [
         "keywords": ["water"],
         "text": "Water helps after alcohol intake because dehydration can worsen dizziness and blood pressure changes.",
     },
+    {
+        "id": "symptoms-caution",
+        "keywords": ["symptoms"],
+        "text": "Symptoms still matter even when a single reading does not look extreme, especially if they are new, worsening, or unusual for you.",
+    },
 ]
 
 
@@ -57,6 +62,8 @@ def retrieve_health_context(parsed: ParsedHealthData, risk: str) -> list[str]:
         tags.add("low_sugar")
     if (parsed.water_ml or 0) < 500:
         tags.add("water")
+    if parsed.symptoms and "normal" not in parsed.symptoms:
+        tags.add("symptoms")
     if risk == "HIGH":
         tags.add("high_bp")
 

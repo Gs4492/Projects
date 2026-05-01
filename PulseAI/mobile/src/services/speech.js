@@ -27,9 +27,11 @@ export function useSpeechToText() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [speechError, setSpeechError] = useState("");
+  const [lastStatus, setLastStatus] = useState("idle");
   const [isAvailable, setIsAvailable] = useState(false);
   const [needsDevBuild, setNeedsDevBuild] = useState(false);
   const listeningStartedAt = useRef(0);
+  const transcriptRef = useRef("");
 
   useEffect(() => {
     let mounted = true;
@@ -67,18 +69,22 @@ export function useSpeechToText() {
   useOptionalSpeechEvent("start", () => {
     listeningStartedAt.current = Date.now();
     setSpeechError("");
-    setTranscript("");
     setIsListening(true);
+    setLastStatus("listening");
   });
 
   useOptionalSpeechEvent("end", () => {
     setIsListening(false);
+    setLastStatus((current) => (transcriptRef.current ? "captured" : current === "error" ? "error" : "idle"));
   });
 
   useOptionalSpeechEvent("result", (event) => {
     const nextTranscript = event?.results?.[0]?.transcript || "";
     if (nextTranscript) {
+      transcriptRef.current = nextTranscript;
       setTranscript(nextTranscript);
+      setSpeechError("");
+      setLastStatus("captured");
     }
   });
 
@@ -95,10 +101,12 @@ export function useSpeechToText() {
       } else {
         setSpeechError("No speech was heard. Please tap again and speak clearly.");
       }
+      setLastStatus("error");
       return;
     }
 
     setSpeechError(rawMessage);
+    setLastStatus("error");
   });
 
   const startListening = useCallback(async () => {
@@ -113,9 +121,12 @@ export function useSpeechToText() {
     }
 
     setSpeechError("");
+    transcriptRef.current = "";
+    setLastStatus("idle");
     const permission = await speechModule.requestPermissionsAsync();
     if (!permission.granted) {
       setSpeechError("Microphone or speech permission was not granted.");
+      setLastStatus("error");
       return false;
     }
 
@@ -158,11 +169,17 @@ export function useSpeechToText() {
       isListening,
       transcript,
       speechError,
+      lastStatus,
       needsDevBuild,
       startListening,
       stopListening,
-      clearTranscript: () => setTranscript(""),
+      clearTranscript: () => {
+        transcriptRef.current = "";
+        setTranscript("");
+        setSpeechError("");
+        setLastStatus("idle");
+      },
     }),
-    [isAvailable, isListening, transcript, speechError, needsDevBuild, startListening, stopListening]
+    [isAvailable, isListening, transcript, speechError, lastStatus, needsDevBuild, startListening, stopListening]
   );
 }

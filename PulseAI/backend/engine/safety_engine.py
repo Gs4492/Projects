@@ -3,6 +3,12 @@ from datetime import datetime
 
 
 SEVERE_SYMPTOMS = {"chest pain", "chest discomfort", "shortness of breath", "breathless", "faint", "confused"}
+MODERATE_SYMPTOMS = {
+    "dizzy", "dizziness", "lightheaded", "lightheadedness",
+    "weak", "weakness", "headache", "blurred vision", "blurred",
+    "palpitations", "racing heart", "vomiting", "nausea",
+    "sleepy", "drowsy", "shaky", "trembling", "clammy",
+}
 
 
 class EvaluationResult(AnalyzeResponse):
@@ -169,6 +175,11 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
         else:
             reasons.append("Water intake is helping reduce dehydration risk.")
 
+        if alcohol_units >= 2 and water_ml < 300:
+            risk_score += 2
+            reasons.append("Low water plus alcohol raises dehydration and dizziness risk.")
+            actions.append("Have water first and avoid lying down immediately after drinking.")
+
     if daily_memory.high_risk_entries_today > 0:
         risk_score += 1
         reasons.append("There was already a high-risk warning earlier today.")
@@ -206,6 +217,9 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
             risk_score += 2
             reasons.append(f"Symptoms were reported: {symptom_text}.")
             actions.append("If symptoms get worse or feel severe, seek urgent medical care.")
+
+        if not elevated_bp and (sugar is None or 70 <= sugar < 180) and alcohol_units == 0:
+            reasons.append("Symptoms still matter even if the main readings do not look severe.")
 
     _add_food_and_drink_guidance(
         actions=actions,
@@ -281,10 +295,13 @@ def _finalize_risk(*, risk_score: int, elevated_bp: bool, sugar, morning_sugar, 
     very_high_sugar = sugar is not None and sugar >= 250
     morning_sugar_concern = morning_sugar is not None and morning_sugar >= 140
     severe_symptoms_present = any(symptom in SEVERE_SYMPTOMS for symptom in symptoms)
+    moderate_symptoms_present = any(symptom in MODERATE_SYMPTOMS for symptom in symptoms)
 
     if risk_score >= 9 or very_high_sugar or severe_symptoms_present:
         return "HIGH"
     if risk_score >= 4 or (elevated_bp and (alcohol_units > 0 or morning_sugar_concern or high_sugar)):
+        return "MEDIUM"
+    if moderate_symptoms_present:
         return "MEDIUM"
     if elevated_bp:
         return "MEDIUM"

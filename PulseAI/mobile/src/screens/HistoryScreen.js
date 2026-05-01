@@ -14,6 +14,13 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import { fetchHistory } from "../services/api";
 
+const RISK_COLORS = {
+  LOW: "#22C55E",
+  MEDIUM: "#F59E0B",
+  HIGH: "#EF4444",
+  PENDING: "#38BDF8",
+};
+
 export default function HistoryScreen({ navigation }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,10 +61,14 @@ export default function HistoryScreen({ navigation }) {
             </View>
           ) : (
             items.map((item) => (
-              <View key={item.id} style={styles.card}>
-                <Text style={styles.risk}>{item.risk}</Text>
+              <View key={item.id} style={[styles.card, { borderColor: RISK_COLORS[item.risk] || "#F59E0B" }]}>
+                <View style={styles.cardTopRow}>
+                  <Text style={[styles.risk, { color: RISK_COLORS[item.risk] || "#F59E0B" }]}>{item.risk} RISK</Text>
+                  <Text style={styles.meta}>{formatTimestamp(item.created_at)}</Text>
+                </View>
                 <Text style={styles.input}>{item.input_text}</Text>
-                <Text style={styles.meta}>{String(item.created_at)}</Text>
+                {item.reasons?.[0] ? <Text style={styles.reason}>Why: {item.reasons[0]}</Text> : null}
+                {item.actions?.[0] ? <Text style={styles.action}>Next step: {item.actions[0]}</Text> : null}
               </View>
             ))
           )}
@@ -69,6 +80,19 @@ export default function HistoryScreen({ navigation }) {
       </SafeAreaView>
     </LinearGradient>
   );
+}
+
+function formatTimestamp(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  return date.toLocaleString([], {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 const styles = StyleSheet.create({
@@ -104,21 +128,39 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#172033",
+    borderColor: "rgba(148, 163, 184, 0.2)",
     borderRadius: 20,
+    borderWidth: 1,
     marginBottom: 12,
     padding: 16,
   },
+  cardTopRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
   risk: {
-    color: "#F97316",
     fontSize: 14,
     fontWeight: "800",
-    marginBottom: 8,
   },
   input: {
     color: "#F8FAFC",
     fontSize: 16,
     lineHeight: 23,
     marginBottom: 8,
+  },
+  reason: {
+    color: "#CBD5E1",
+    fontSize: 14,
+    lineHeight: 21,
+    marginBottom: 6,
+  },
+  action: {
+    color: "#FDBA74",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 21,
   },
   meta: {
     color: "#94A3B8",

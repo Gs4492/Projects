@@ -28,7 +28,7 @@ export default function ResultScreen({ navigation, route }) {
           </View>
 
           <View style={styles.messagePanel}>
-            <Text style={styles.messageTitle}>{needsMoreInfo ? "What is missing" : "Assistant message"}</Text>
+            <Text style={styles.messageTitle}>{needsMoreInfo ? "What is missing" : "Clear guidance"}</Text>
             <Text style={styles.messageBody}>{result.assistant_message}</Text>
           </View>
 
@@ -62,8 +62,8 @@ export default function ResultScreen({ navigation, route }) {
 
               <View style={styles.panel}>
                 <Text style={styles.panelTitle}>Why this result</Text>
-                {result.reasons.map((reason) => (
-                  <ActionCard key={reason} title="Reason" body={reason} accent={accent} />
+                {result.reasons.map((reason, index) => (
+                  <ActionCard key={reason} title={`Reason ${index + 1}`} body={reason} accent={accent} />
                 ))}
               </View>
 
@@ -111,7 +111,7 @@ function Section({ title, items, accent }) {
     <View style={styles.panel}>
       <Text style={styles.panelTitle}>{title}</Text>
       {items.map((item) => (
-        <ActionCard key={`${title}-${item}`} title={title} body={item} accent={accent} />
+        <ActionCard key={`${title}-${item}`} body={item} accent={accent} />
       ))}
     </View>
   );

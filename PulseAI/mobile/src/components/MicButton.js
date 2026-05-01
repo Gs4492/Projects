@@ -1,16 +1,28 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function MicButton({ isListening, onPress, transcript }) {
+export default function MicButton({ isListening, onPress, transcript, speechError }) {
+  const hasTranscript = Boolean(transcript?.trim());
+  const statusLabel = isListening ? "Listening now" : hasTranscript ? "Voice note captured" : "Tap to speak";
+  const helperText = isListening
+    ? "Speak naturally. You can mention food, drinks, BP, sugar, water, and how you feel."
+    : hasTranscript
+      ? transcript
+      : "Say: rice and sweets, BP 150/95, sugar 180, 2 glasses water, feeling normal";
+  const ctaText = isListening
+    ? "Tap again when you are done"
+    : hasTranscript
+      ? "You can edit the sections below or analyze directly"
+      : "Voice note for faster logging";
+
   return (
     <Pressable onPress={onPress} style={[styles.button, isListening ? styles.buttonActive : null]}>
       <View style={styles.iconWrap}>
         <Text style={styles.icon}>{isListening ? "REC" : "MIC"}</Text>
       </View>
-      <Text style={styles.label}>{isListening ? "Listening now" : "Tap to speak"}</Text>
-      <Text style={styles.helper}>
-        {transcript ? transcript : "Say: rice and sweets, BP 150/95, sugar 180, 2 glasses water, feeling normal"}
-      </Text>
-      <Text style={styles.cta}>{isListening ? "Tap again to stop" : "Voice note for faster logging"}</Text>
+      <Text style={styles.label}>{statusLabel}</Text>
+      <Text style={styles.helper}>{helperText}</Text>
+      {speechError ? <Text style={styles.error}>{speechError}</Text> : null}
+      <Text style={styles.cta}>{ctaText}</Text>
     </Pressable>
   );
 }
@@ -55,6 +67,13 @@ const styles = StyleSheet.create({
     color: "#E2E8F0",
     fontSize: 15,
     lineHeight: 23,
+  },
+  error: {
+    color: "#FCA5A5",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
+    marginTop: 12,
   },
   cta: {
     color: "#FDBA74",

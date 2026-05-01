@@ -2,8 +2,8 @@
 
 export default function ActionCard({ title, body, accent = "#F59E0B" }) {
   return (
-    <View style={[styles.card, { borderColor: accent }]}> 
-      <Text style={styles.title}>{title}</Text>
+    <View style={[styles.card, { borderColor: accent }]}>
+      {title ? <Text style={styles.title}>{title}</Text> : null}
       <Text style={styles.body}>{body}</Text>
     </View>
   );

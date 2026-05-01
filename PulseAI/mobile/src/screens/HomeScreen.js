@@ -26,33 +26,29 @@ export default function HomeScreen({ navigation }) {
   const [feeling, setFeeling] = useState("");
   const [sugarTiming, setSugarTiming] = useState("");
   const [bpPosition, setBpPosition] = useState("");
+  const [voiceNote, setVoiceNote] = useState("");
   const [loading, setLoading] = useState(false);
   const {
     isAvailable,
     isListening,
     transcript,
     speechError,
+    clearTranscript,
     needsDevBuild,
     startListening,
     stopListening,
   } = useSpeechToText();
 
   const combinedPreview = useMemo(
-    () => buildCombinedEntry({ food, drinks, bp, sugar, water, feeling, sugarTiming, bpPosition }).trim(),
-    [food, drinks, bp, sugar, water, feeling, sugarTiming, bpPosition]
+    () => buildCombinedEntry({ food, drinks, bp, sugar, water, feeling, sugarTiming, bpPosition, voiceNote }).trim(),
+    [food, drinks, bp, sugar, water, feeling, sugarTiming, bpPosition, voiceNote]
   );
 
   useEffect(() => {
     if (transcript) {
-      setFood((current) => current || transcript);
+      setVoiceNote(transcript);
     }
   }, [transcript]);
-
-  useEffect(() => {
-    if (speechError) {
-      Alert.alert("Speech input issue", speechError);
-    }
-  }, [speechError]);
 
   async function handleAnalyze() {
     const combined = buildCombinedEntry({
@@ -64,6 +60,7 @@ export default function HomeScreen({ navigation }) {
       feeling,
       sugarTiming,
       bpPosition,
+      voiceNote,
     }).trim();
 
     if (!combined) {
@@ -129,7 +126,7 @@ export default function HomeScreen({ navigation }) {
             </View>
           </View>
 
-          <MicButton isListening={isListening} onPress={handleMicPress} transcript={transcript} />
+          <MicButton isListening={isListening} onPress={handleMicPress} transcript={voiceNote} speechError={speechError} />
 
           {needsDevBuild ? (
             <View style={styles.noticeBox}>
@@ -234,6 +231,18 @@ export default function HomeScreen({ navigation }) {
               </View>
             ) : null}
 
+            {voiceNote ? (
+              <View style={styles.voiceNoteBox}>
+                <View style={styles.voiceNoteHeader}>
+                  <Text style={styles.voiceNoteTitle}>Captured voice note</Text>
+                  <Pressable onPress={() => { setVoiceNote(""); clearTranscript(); }} style={styles.voiceNoteClear}>
+                    <Text style={styles.voiceNoteClearText}>Clear</Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.voiceNoteBody}>{voiceNote}</Text>
+              </View>
+            ) : null}
+
           </SectionCard>
 
           <SectionCard eyebrow="Feeling" title="How do you feel right now?" tone="blue">
@@ -301,6 +310,7 @@ function buildCombinedEntry({
   feeling,
   sugarTiming,
   bpPosition,
+  voiceNote,
 }) {
   const parts = [];
 
@@ -323,6 +333,7 @@ function buildCombinedEntry({
 
   if (water?.trim()) parts.push(`Water: ${water.trim()}`);
   if (feeling?.trim()) parts.push(`Feeling: ${feeling.trim()}`);
+  if (!parts.length && voiceNote?.trim()) return voiceNote.trim();
 
   return parts.join(" | ");
 }
@@ -579,6 +590,42 @@ const styles = StyleSheet.create({
   },
   contextBtnTextActive: {
     color: "#FFF7ED",
+  },
+  voiceNoteBox: {
+    backgroundColor: "rgba(15, 23, 42, 0.75)",
+    borderColor: "rgba(148, 163, 184, 0.26)",
+    borderRadius: 18,
+    borderWidth: 1,
+    marginTop: 16,
+    padding: 14,
+  },
+  voiceNoteHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  voiceNoteTitle: {
+    color: "#F8FAFC",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  voiceNoteClear: {
+    backgroundColor: "rgba(249, 115, 22, 0.18)",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  voiceNoteClearText: {
+    color: "#FDBA74",
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  voiceNoteBody: {
+    color: "#CBD5E1",
+    fontSize: 15,
+    lineHeight: 22,
   },
 });
 
