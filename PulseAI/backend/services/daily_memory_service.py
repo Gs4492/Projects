@@ -24,7 +24,7 @@ def get_daily_memory(db: Session) -> DailyMemory:
     high_risk_entries_today = 0
     medium_risk_entries_today = 0
     salty_entries_today = 0
-    water_ml_today: int | None = None
+    water_ml_today = 0
     morning_sugar_level: int | None = None
     last_sugar_level: int | None = None
     last_bp = HealthMetric()
@@ -43,7 +43,7 @@ def get_daily_memory(db: Session) -> DailyMemory:
             salty_entries_today += 1
 
         if parsed.water_ml is not None:
-            water_ml_today = max(water_ml_today or 0, parsed.water_ml)
+            water_ml_today += parsed.water_ml
 
         if parsed.morning_sugar_level is not None:
             morning_sugar_level = parsed.morning_sugar_level
@@ -63,7 +63,7 @@ def get_daily_memory(db: Session) -> DailyMemory:
         alcohol_units_today=alcohol_units_today,
         high_risk_entries_today=high_risk_entries_today,
         medium_risk_entries_today=medium_risk_entries_today,
-        water_ml_today=water_ml_today,
+        water_ml_today=water_ml_today or None,
         morning_sugar_level=morning_sugar_level,
         last_sugar_level=last_sugar_level,
         last_bp=last_bp,
@@ -73,7 +73,7 @@ def get_daily_memory(db: Session) -> DailyMemory:
             entries_today=len(logs),
             alcohol_units_today=alcohol_units_today,
             high_risk_entries_today=high_risk_entries_today,
-            water_ml_today=water_ml_today,
+            water_ml_today=water_ml_today or None,
             morning_sugar_level=morning_sugar_level,
             last_bp=last_bp,
         ),

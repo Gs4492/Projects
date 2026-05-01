@@ -23,6 +23,8 @@ async def analyze_health(request: AnalyzeRequest, db: Session = Depends(get_db))
     enriched = merge_with_daily_memory(parsed, daily_memory)
     follow_up_questions = build_follow_up_questions(enriched, daily_memory)
 
+    has_real_symptoms = bool(enriched.symptoms) and "normal" not in enriched.symptoms
+
     has_core_readings = any([
         enriched.bp.systolic is not None and enriched.bp.diastolic is not None,
         enriched.sugar_level is not None,
@@ -30,7 +32,7 @@ async def analyze_health(request: AnalyzeRequest, db: Session = Depends(get_db))
         enriched.alcohol.alcohol_units > 0,
         bool(enriched.food.items),
         enriched.water_ml is not None,
-        bool(enriched.symptoms),
+        has_real_symptoms,
     ])
 
     if follow_up_questions and not has_core_readings:

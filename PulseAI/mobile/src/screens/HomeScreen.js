@@ -24,6 +24,8 @@ export default function HomeScreen({ navigation }) {
   const [sugar, setSugar] = useState("");
   const [water, setWater] = useState("");
   const [feeling, setFeeling] = useState("");
+  const [sugarTiming, setSugarTiming] = useState("");
+  const [bpPosition, setBpPosition] = useState("");
   const [loading, setLoading] = useState(false);
   const {
     isAvailable,
@@ -36,8 +38,8 @@ export default function HomeScreen({ navigation }) {
   } = useSpeechToText();
 
   const combinedPreview = useMemo(
-    () => buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }).trim(),
-    [food, drinks, bp, sugar, water, feeling]
+    () => buildCombinedEntry({ food, drinks, bp, sugar, water, feeling, sugarTiming, bpPosition }).trim(),
+    [food, drinks, bp, sugar, water, feeling, sugarTiming, bpPosition]
   );
 
   useEffect(() => {
@@ -53,7 +55,16 @@ export default function HomeScreen({ navigation }) {
   }, [speechError]);
 
   async function handleAnalyze() {
-    const combined = buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }).trim();
+    const combined = buildCombinedEntry({
+      food,
+      drinks,
+      bp,
+      sugar,
+      water,
+      feeling,
+      sugarTiming,
+      bpPosition,
+    }).trim();
 
     if (!combined) {
       Alert.alert("Add details", "Fill at least one section before getting guidance.");
@@ -94,7 +105,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <LinearGradient colors={["#07101E", "#0B1B2D", "#0F3556"]} style={styles.bg}>
       <SafeAreaView style={styles.safe}>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.heroTopRow}>
               <View style={styles.badge}>
@@ -165,12 +176,64 @@ export default function HomeScreen({ navigation }) {
               <MetricField label="BP" placeholder="Example 150/95" value={bp} onChangeText={setBp} />
               <MetricField label="Sugar" placeholder="Example 180" value={sugar} onChangeText={setSugar} />
             </View>
+
             <MetricField
               label="Water"
               placeholder="Example 2 glasses or 500 ml"
               value={water}
               onChangeText={setWater}
             />
+
+            {/* 👇 ADD THIS BLOCK HERE (exact spot) */}
+
+            {sugar?.trim() ? (
+              <View style={styles.contextRow}>
+                <Text style={styles.contextLabel}>Sugar reading was:</Text>
+                <View style={styles.contextButtons}>
+                  <Pressable
+                    onPress={() => setSugarTiming("before eating")}
+                    style={[styles.contextBtn, sugarTiming === "before eating" && styles.contextBtnActive]}
+                  >
+                    <Text style={[styles.contextBtnText, sugarTiming === "before eating" && styles.contextBtnTextActive]}>
+                      Before eating
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setSugarTiming("after eating")}
+                    style={[styles.contextBtn, sugarTiming === "after eating" && styles.contextBtnActive]}
+                  >
+                    <Text style={[styles.contextBtnText, sugarTiming === "after eating" && styles.contextBtnTextActive]}>
+                      After eating
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
+
+            {bp?.trim() ? (
+              <View style={styles.contextRow}>
+                <Text style={styles.contextLabel}>BP was taken:</Text>
+                <View style={styles.contextButtons}>
+                  <Pressable
+                    onPress={() => setBpPosition("sitting")}
+                    style={[styles.contextBtn, bpPosition === "sitting" && styles.contextBtnActive]}
+                  >
+                    <Text style={[styles.contextBtnText, bpPosition === "sitting" && styles.contextBtnTextActive]}>
+                      Sitting
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setBpPosition("standing")}
+                    style={[styles.contextBtn, bpPosition === "standing" && styles.contextBtnActive]}
+                  >
+                    <Text style={[styles.contextBtnText, bpPosition === "standing" && styles.contextBtnTextActive]}>
+                      Standing
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
+
           </SectionCard>
 
           <SectionCard eyebrow="Feeling" title="How do you feel right now?" tone="blue">
@@ -229,14 +292,38 @@ function MetricField({ label, placeholder, value, onChangeText }) {
   );
 }
 
-function buildCombinedEntry({ food, drinks, bp, sugar, water, feeling }) {
+function buildCombinedEntry({
+  food,
+  drinks,
+  bp,
+  sugar,
+  water,
+  feeling,
+  sugarTiming,
+  bpPosition,
+}) {
   const parts = [];
+
   if (food?.trim()) parts.push(`Food: ${food.trim()}`);
   if (drinks?.trim()) parts.push(`Drinks: ${drinks.trim()}`);
-  if (bp?.trim()) parts.push(`BP: ${bp.trim()}`);
-  if (sugar?.trim()) parts.push(`Sugar: ${sugar.trim()}`);
+
+  if (bp?.trim()) {
+    const bpPart = bpPosition
+      ? `BP: ${bp.trim()} (${bpPosition})`
+      : `BP: ${bp.trim()}`;
+    parts.push(bpPart);
+  }
+
+  if (sugar?.trim()) {
+    const sugarPart = sugarTiming
+      ? `Sugar: ${sugar.trim()} (${sugarTiming})`
+      : `Sugar: ${sugar.trim()}`;
+    parts.push(sugarPart);
+  }
+
   if (water?.trim()) parts.push(`Water: ${water.trim()}`);
   if (feeling?.trim()) parts.push(`Feeling: ${feeling.trim()}`);
+
   return parts.join(" | ");
 }
 
@@ -459,6 +546,39 @@ const styles = StyleSheet.create({
     color: "#FFF7ED",
     fontSize: 22,
     fontWeight: "900",
+  },
+  contextRow: {
+    marginTop: 14,
+  },
+  contextLabel: {
+    color: "#DCFCE7",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  contextButtons: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  contextBtn: {
+    backgroundColor: "rgba(15, 23, 42, 0.9)",
+    borderColor: "rgba(148, 163, 184, 0.42)",
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  contextBtnActive: {
+    backgroundColor: "#F97316",
+    borderColor: "#F97316",
+  },
+  contextBtnText: {
+    color: "#E2E8F0",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  contextBtnTextActive: {
+    color: "#FFF7ED",
   },
 });
 

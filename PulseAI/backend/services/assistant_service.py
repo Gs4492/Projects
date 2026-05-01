@@ -49,7 +49,7 @@ async def build_assistant_message(
                 text=enhanced_text,
                 risk=response.risk,
                 reasons=response.reasons,
-                actions=[],
+                actions=response.actions,
                 knowledge=response.knowledge,
                 daily_summary=daily_context,
             ),
@@ -129,16 +129,7 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
         elif is_post_meal:
             context_label = " (post-meal)"
         else:
-            from datetime import datetime
-            hour = datetime.now().hour
-            if hour < 11:
-                context_label = " (fasting)"
-            elif hour < 15:
-                context_label = " (after breakfast)"
-            elif hour < 20:
-                context_label = " (after meal)"
-            else:
-                context_label = " (evening reading)"
+            context_label = " (timing not specified)"
 
         if sugar < 70:
             what_bits.append(f"Sugar {sugar}{context_label} — dangerously low. Act immediately.")
