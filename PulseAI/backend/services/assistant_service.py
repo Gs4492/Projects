@@ -1,6 +1,7 @@
 from backend.schemas.request_response import AnalyzeResponse, GuidanceSections
 from backend.services.llm_service import try_llm_guidance
 import asyncio
+import re
 
 
 async def build_assistant_message(
@@ -57,7 +58,9 @@ async def build_assistant_message(
         )
 
         if llm_message and llm_message.strip():
-            return llm_message
+            cleaned = _sanitize_llm_message(llm_message, response)
+            if cleaned:
+                return cleaned
 
     except asyncio.TimeoutError:
         print("LLM TIMEOUT — using fallback")
@@ -326,6 +329,46 @@ def _fallback_message(response: AnalyzeResponse) -> str:
 
     bits.append("Guidance only, not a diagnosis.")
     return " ".join(bits)
+
+
+def _sanitize_llm_message(message: str, response: AnalyzeResponse) -> str:
+    text = " ".join((message or "").split())
+    if not text:
+        return ""
+
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    if len(sentences) == 1 and text and not text.endswith((".", "!", "?")):
+        sentences = [text]
+
+    speculative_markers = [
+        "likely due to",
+        "due to",
+        "because of",
+        "caused by",
+        "may have contributed",
+        "could be from",
+        "may be from",
+        "might be from",
+        "temporary dip in energy",
+    ]
+    supported_reason_text = " ".join(response.reasons).lower()
+    supported_pairs = [
+        "alcohol combined with salty food",
+        "heavy carbs plus high sugar",
+        "hydration is low for the amount of alcohol taken",
+        "alcohol on top of an already elevated bp",
+    ]
+
+    filtered: list[str] = []
+    for sentence in sentences:
+        lowered = sentence.lower()
+        if any(marker in lowered for marker in speculative_markers):
+            if not any(pair in lowered and pair in supported_reason_text for pair in supported_pairs):
+                continue
+        filtered.append(sentence.strip())
+
+    cleaned = " ".join(part for part in filtered if part)
+    return cleaned or _fallback_message(response)
 
 
 def _dedupe(items: list[str]) -> list[str]:
