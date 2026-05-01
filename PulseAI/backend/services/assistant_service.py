@@ -196,6 +196,8 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
             drink_now.append(action)
         elif any(token in lowered for token in ["recheck", "check again", "15 minutes", "30 to 60", "later today"]):
             check_again.append(action)
+        elif any(token in lowered for token in ["rest if needed", "monitor the symptoms", "keep the next few hours simple"]):
+            do_now.append(action)
         elif lowered.startswith("avoid") or lowered.startswith("do not") or lowered.startswith("no more") or lowered.startswith("keep "):
             avoid.append(action)
         else:
