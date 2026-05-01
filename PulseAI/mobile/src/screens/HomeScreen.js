@@ -313,27 +313,36 @@ function buildCombinedEntry({
   voiceNote,
 }) {
   const parts = [];
+  const clean = (value) => value?.trim().replace(/[`]+/g, "");
 
-  if (food?.trim()) parts.push(`Food: ${food.trim()}`);
-  if (drinks?.trim()) parts.push(`Drinks: ${drinks.trim()}`);
+  const foodValue = clean(food);
+  const drinkValue = clean(drinks);
+  const bpValue = clean(bp);
+  const sugarValue = clean(sugar);
+  const waterValue = clean(water);
+  const feelingValue = clean(feeling);
+  const voiceValue = clean(voiceNote);
 
-  if (bp?.trim()) {
+  if (foodValue) parts.push(`Food: ${foodValue}`);
+  if (drinkValue) parts.push(`Drinks: ${drinkValue}`);
+
+  if (bpValue) {
     const bpPart = bpPosition
-      ? `BP: ${bp.trim()} (${bpPosition})`
-      : `BP: ${bp.trim()}`;
+      ? `BP: ${bpValue} (${bpPosition})`
+      : `BP: ${bpValue}`;
     parts.push(bpPart);
   }
 
-  if (sugar?.trim()) {
+  if (sugarValue) {
     const sugarPart = sugarTiming
-      ? `Sugar: ${sugar.trim()} (${sugarTiming})`
-      : `Sugar: ${sugar.trim()}`;
+      ? `Sugar: ${sugarValue} (${sugarTiming})`
+      : `Sugar: ${sugarValue}`;
     parts.push(sugarPart);
   }
 
-  if (water?.trim()) parts.push(`Water: ${water.trim()}`);
-  if (feeling?.trim()) parts.push(`Feeling: ${feeling.trim()}`);
-  if (!parts.length && voiceNote?.trim()) return voiceNote.trim();
+  if (waterValue) parts.push(`Water: ${waterValue}`);
+  if (feelingValue) parts.push(`Feeling: ${feelingValue}`);
+  if (!parts.length && voiceValue) return voiceValue;
 
   return parts.join(" | ");
 }

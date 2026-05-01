@@ -273,6 +273,12 @@ def build_guidance_sections(response: AnalyzeResponse) -> GuidanceSections:
     if not do_now and response.actions:
         do_now = response.actions[:2]
 
+    if any("rest if needed" in item.lower() or "monitor the symptoms" in item.lower() for item in do_now):
+        do_now = [
+            item for item in do_now
+            if "food and drink can stay simple" not in item.lower()
+        ]
+
     if alcohol_units > 0 and not any("alcohol unit" in bit.lower() for bit in what_bits):
         what_bits.append(f"Alcohol is part of this entry at about {alcohol_units:.1f} unit{'s' if alcohol_units != 1 else ''}.")
 

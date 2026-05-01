@@ -90,6 +90,7 @@ async def try_llm_guidance(
         "- DO NOT invent a cause for a reading unless that cause is explicitly supported by the provided reasons or context\n"
         "- DO NOT use phrases like 'likely due to', 'caused by', 'because of', or 'may have contributed' unless the evidence is explicitly in the provided reasoning\n"
         "- DO NOT attribute weakness, tiredness, heaviness, sleepiness, or dizziness to coffee, carbs, sugar, or any other input unless that exact relationship is already supported by the provided observations\n"
+        "- DO NOT use speculative phrases like 'this could be', 'might be', 'may be from', or 'temporary dip in energy' when explaining symptoms\n"
         "- DO NOT add new hydration, food, or recheck advice unless it is already supported by the provided recommendations or observations\n"
         "- Prefer calm, practical advice\n"
         "- Keep it under 110 words\n"

@@ -314,11 +314,14 @@ def _finalize_risk(*, risk_score: int, elevated_bp: bool, sugar, morning_sugar, 
     morning_sugar_concern = morning_sugar is not None and morning_sugar >= 140
     severe_symptoms_present = any(symptom in SEVERE_SYMPTOMS for symptom in symptoms)
     moderate_symptoms_present = any(symptom in MODERATE_SYMPTOMS for symptom in symptoms)
+    symptom_only_case = moderate_symptoms_present and not elevated_bp and not high_sugar and alcohol_units == 0
 
     if risk_score >= 9 or very_high_sugar or severe_symptoms_present:
         return "HIGH"
     if risk_score >= 4 or (elevated_bp and (alcohol_units > 0 or morning_sugar_concern or high_sugar)):
         return "MEDIUM"
+    if symptom_only_case and risk_score <= 3:
+        return "LOW"
     if moderate_symptoms_present:
         return "MEDIUM"
     if elevated_bp:
