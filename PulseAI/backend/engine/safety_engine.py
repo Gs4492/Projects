@@ -33,6 +33,9 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
     symptoms = parsed.symptoms
     total_alcohol_today = round((daily_memory.alcohol_units_today or 0) + alcohol_units, 1)
     elevated_bp = (systolic is not None and systolic >= 140) or (diastolic is not None and diastolic >= 90)
+    raw_notes = (parsed.notes or "").lower()
+    is_fasting = _is_fasting_context(parsed, raw_notes)
+    is_post_meal = _is_post_meal_context(raw_notes)
 
     # Time of day context
     current_hour = datetime.now().hour
@@ -93,13 +96,27 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
             risk_score += 3
             reasons.append(f"Sugar {sugar} — high. Keep the next meal light and avoid sweets or extra carbs.")
             actions.append("Keep the next meal light and avoid sweets or extra carbs.")
+        elif is_post_meal:
+            if sugar >= 140:
+                risk_score += 1
+                reasons.append(f"Sugar {sugar} after eating is a little higher than ideal.")
+                actions.append("Keep the next meal lighter and avoid sweets for now.")
+            else:
+                reasons.append(f"Sugar {sugar} after eating is within an acceptable range.")
+        elif is_fasting:
+            if sugar >= 126:
+                risk_score += 2
+                reasons.append(f"Sugar {sugar} fasting is above the normal range and should be monitored closely.")
+                actions.append("Avoid sweets and heavy carbs for the rest of the day.")
+            elif sugar >= 100:
+                risk_score += 1
+                reasons.append(f"Sugar {sugar} fasting is mildly above normal.")
         elif sugar >= 126:
-            risk_score += 2
-            reasons.append(f"Sugar {sugar} — above normal. This range may indicate diabetes if consistent.")
-            actions.append("Avoid sweets and heavy carbs for the rest of the day.")
-        elif sugar >= 100:
             risk_score += 1
-            reasons.append(f"Sugar {sugar} — prediabetic range. Worth monitoring, especially after carb-heavy meals.")
+            reasons.append(f"Sugar {sugar} is above normal, but the timing of the reading was not specified.")
+            actions.append("Keep meals balanced and avoid extra sweets until you recheck.")
+        elif sugar >= 100:
+            reasons.append(f"Sugar {sugar} is slightly above ideal, but the timing of the reading was not specified.")
         elif sugar >= 70:
             reasons.append(f"Sugar {sugar} — normal range. Good.")
             actions.append("Continue with your normal routine and keep monitoring.")
@@ -108,11 +125,11 @@ def evaluate_health(parsed: ParsedHealthData, daily_memory: DailyMemory | None =
             reasons.append(f"Sugar {sugar} is on the lower side. Make sure to eat regular meals and monitor for symptoms of low sugar.")
 
     # Time-aware sugar context
-    if sugar is not None and is_morning and sugar >= 126:
+    if sugar is not None and is_fasting and sugar >= 126:
         risk_score += 1
-        reasons.append(f"Sugar {sugar} in the morning is likely a fasting reading. Fasting sugar above 126 needs medical attention.")
-    elif sugar is not None and not is_morning and sugar >= 140:
-        reasons.append(f"Sugar {sugar} after a meal is above normal. Avoid sweets and heavy carbs for the rest of the day.")
+        reasons.append(f"This looks like a fasting sugar reading, so {sugar} needs more attention than a post-meal value would.")
+    elif sugar is not None and is_post_meal and sugar >= 140:
+        reasons.append(f"This looks like a post-meal sugar reading, so it should be interpreted against what was eaten.")
 
     if alcohol_units >= 6:
         risk_score += 5
@@ -365,6 +382,23 @@ def _prioritize_reasons(reasons: list[str], risk_score: int) -> list[str]:
             important.append(reason)
 
     return important + softer
+
+
+def _is_fasting_context(parsed: ParsedHealthData, raw_text: str) -> bool:
+    return (
+        parsed.morning_sugar_level is not None
+        or any(word in raw_text for word in ["fasting", "empty stomach", "before breakfast", "morning sugar", "before eating"])
+    )
+
+
+def _is_post_meal_context(raw_text: str) -> bool:
+    return any(phrase in raw_text for phrase in [
+        "after meal",
+        "after lunch",
+        "after dinner",
+        "after eating",
+        "post-meal",
+    ])
 
 
 def _dedupe(items: list[str]) -> list[str]:

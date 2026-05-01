@@ -87,6 +87,7 @@ async def try_llm_guidance(
         "- You MUST strictly follow the provided risk level, reasons, and context\n"
         "- DO NOT contradict or override the given reasoning\n"
         "- DO NOT add new medical conclusions beyond the provided information\n"
+        "- DO NOT invent a cause for a reading unless that cause is explicitly supported by the provided reasons or context\n"
         "- Prefer calm, practical advice\n"
         "- Keep it under 110 words\n"
     )
@@ -103,12 +104,14 @@ async def try_llm_guidance(
         "- Combine factors (e.g., BP + coffee, sugar + carbs, alcohol + salt)\n"
         "- Give clear next steps (what to eat, what to drink, what to avoid)\n"
         "- Mention timing if relevant (rest now, recheck later)\n"
+        "- If timing is not specified, say that instead of assuming fasting or post-meal\n"
+        "- Do not say a food or drink caused a reading unless that link is clearly supported by the supplied observations\n"
         "- Keep tone simple, direct, and helpful\n"
         "- Max 110 words\n\n"
 
         "Examples of GOOD guidance:\n"
         "- 'Sugar 144 after rice is borderline. Avoid sweets for the rest of the day.'\n"
-        "- 'BP 138/75 with coffee is mildly elevated. Switch to water and avoid more caffeine today.'\n"
+        "- 'BP 138/75 is mildly elevated. Keep the next few hours simple and avoid more caffeine today.'\n"
         "- 'Alcohol with salty snacks can push BP higher tonight. Stop here and hydrate.'\n\n"
 
         f"Original input: {text}\n\n"

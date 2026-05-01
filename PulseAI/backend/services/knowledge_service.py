@@ -48,7 +48,7 @@ KNOWLEDGE_BASE = [
 def retrieve_health_context(parsed: ParsedHealthData, risk: str) -> list[str]:
     tags: set[str] = set()
 
-    if parsed.bp.systolic or parsed.bp.diastolic:
+    if (parsed.bp.systolic and parsed.bp.systolic >= 140) or (parsed.bp.diastolic and parsed.bp.diastolic >= 90):
         tags.add("bp")
     if (parsed.bp.systolic and parsed.bp.systolic >= 160) or (parsed.bp.diastolic and parsed.bp.diastolic >= 100):
         tags.add("high_bp")
