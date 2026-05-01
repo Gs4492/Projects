@@ -88,6 +88,8 @@ async def try_llm_guidance(
         "- DO NOT contradict or override the given reasoning\n"
         "- DO NOT add new medical conclusions beyond the provided information\n"
         "- DO NOT invent a cause for a reading unless that cause is explicitly supported by the provided reasons or context\n"
+        "- DO NOT use phrases like 'likely due to', 'caused by', 'because of', or 'may have contributed' unless the evidence is explicitly in the provided reasoning\n"
+        "- DO NOT add new hydration, food, or recheck advice unless it is already supported by the provided recommendations or observations\n"
         "- Prefer calm, practical advice\n"
         "- Keep it under 110 words\n"
     )
@@ -106,6 +108,8 @@ async def try_llm_guidance(
         "- Mention timing if relevant (rest now, recheck later)\n"
         "- If timing is not specified, say that instead of assuming fasting or post-meal\n"
         "- Do not say a food or drink caused a reading unless that link is clearly supported by the supplied observations\n"
+        "- If the supplied recommendations do not ask for more water, do not add a new water instruction\n"
+        "- If the supplied observations say a sugar reading after eating is acceptable, do not reframe it as high or concerning\n"
         "- Keep tone simple, direct, and helpful\n"
         "- Max 110 words\n\n"
 
